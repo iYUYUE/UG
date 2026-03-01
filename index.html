@@ -11,6 +11,14 @@
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <!-- Three.js v0.132.2 -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <!-- OrbitControls v0.132.2 -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <!-- GLTFLoader v0.132.2 -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
+    <!-- DRACOLoader v0.132.2 -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/DRACOLoader.js"></script>
     <!-- 统一的 Tailwind 配置 -->
     <script>
         tailwind.config = {
@@ -82,6 +90,30 @@
             .modal-content-scroll {
                 @apply max-h-[70vh] overflow-y-auto pr-2; /* 关键：添加最大高度和垂直滚动 */
             }
+            .btn-toggle-active {
+                @apply bg-primary text-white;
+            }
+            /* Keyboard navigation focus indicators for Virtual Mode controls */
+            .control-panel button:focus,
+            .control-panel button:focus-visible {
+                outline: 2px solid #3b82f6;
+                outline-offset: 2px;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
+            .control-panel input[type="checkbox"]:focus,
+            .control-panel input[type="checkbox"]:focus-visible {
+                outline: 2px solid #3b82f6;
+                outline-offset: 2px;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
+            #btn-start-virtual:focus,
+            #btn-start-virtual:focus-visible,
+            #btn-return-from-virtual:focus,
+            #btn-return-from-virtual:focus-visible {
+                outline: 2px solid #3b82f6;
+                outline-offset: 2px;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
         }
     </style>
 </head>
@@ -122,10 +154,10 @@
             <div class="text-center mb-12">
                 <h2 class="text-4xl font-bold text-gray-800 mb-4">欢迎使用交互式图文题库</h2>
                 <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                    本系统提供学习和测验两种模式，帮助您通过图文结合的方式高效学习。第一单元包含20道精选题目，涵盖多个单元。
+                    本系统提供学习、测验和虚拟三种模式，帮助您通过图文结合和3D可视化的方式高效学习。第一单元包含20道精选题目，涵盖多个单元。
                 </p>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl">
                 <div class="bg-white rounded-xl shadow-lg p-8 card-shadow">
                     <div class="flex items-center justify-center mb-6">
                         <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
@@ -170,6 +202,35 @@
                     <button id="btn-test-mode" class="btn-primary w-full" disabled>
                         开始测验
                     </button>
+                </div>
+                <!-- Virtual Mode Card -->
+                <div class="bg-white rounded-xl shadow-lg p-8 card-shadow">
+                    <div class="flex items-center justify-center mb-6">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
+                            <i class="fa fa-cube text-purple-600 text-3xl"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-bold text-center text-gray-800 mb-2">虚拟模式</h3>
+                    <p class="text-sm text-center text-purple-600 font-medium mb-4">探索、互动、实践</p>
+                    <p class="text-gray-600 text-center mb-6">
+                        选择模具后，通过拖动和按钮，实现装、拆和360度观察零部件等功能，学习和掌握虚拟装配模具的结构、装配关系、零部件形状特征和名称。
+                    </p>
+
+                    <div class="mb-4 text-left w-full">
+                        <label for="mold-type-select"
+                            class="block text-sm font-medium text-gray-700 mb-2">选择模具</label>
+                        <select id="mold-type-select"
+                            class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md border">
+                            <option value="b_type">B型模具</option>
+                            <option value="m_type">M型模具</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <button id="btn-start-virtual" class="btn-primary w-full" aria-label="进入虚拟模式开始3D模具模拟">
+                            开始模拟
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -276,6 +337,150 @@
                     </div>
                     <div id="test-options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <!-- 选项将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 虚拟模式页面 -->
+        <section id="virtual-mode-section" class="hidden animate-fade-in">
+            <!-- 导航栏 -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <div class="flex justify-between items-center">
+                    <button id="btn-return-from-virtual" class="btn-secondary flex items-center space-x-1" aria-label="返回欢迎页面">
+                        <i class="fa fa-arrow-left" aria-hidden="true"></i>
+                        <span>返回</span>
+                    </button>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm font-medium text-gray-500">模式:</span>
+                        <span class="text-sm font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded">虚拟模式</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 虚拟模式内容区域 -->
+            <div class="flex gap-6">
+                <!-- 控制面板 (左侧固定侧边栏) -->
+                <aside class="w-[280px] flex-shrink-0">
+                    <div class="bg-white rounded-xl shadow-lg p-6 space-y-6">
+                        <!-- 零件列表 -->
+                        <div role="group" aria-labelledby="parts-list-heading">
+                            <h4 id="parts-list-heading" class="text-lg font-bold text-gray-800 mb-3 border-b pb-2">零件列表</h4>
+                            <div class="space-y-2">
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" id="show-core" class="w-4 h-4 text-primary rounded focus:ring-primary" checked aria-label="显示型芯模型">
+                                    <span class="text-sm text-gray-700">型芯</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" id="show-cavity" class="w-4 h-4 text-primary rounded focus:ring-primary" aria-label="显示型腔模型">
+                                    <span class="text-sm text-gray-700">型腔</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" id="show-part" class="w-4 h-4 text-primary rounded focus:ring-primary" aria-label="显示产品模型">
+                                    <span class="text-sm text-gray-700">产品</span>
+                                </label>
+                            </div>
+                            <div class="flex gap-2 mt-3">
+                                <button id="select-all-parts" class="flex-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded transition-colors" aria-label="选择所有零件">
+                                    全选
+                                </button>
+                                <button id="deselect-all-parts" class="flex-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded transition-colors" aria-label="取消选择所有零件">
+                                    取消全选
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 视图控制 -->
+                        <div role="group" aria-labelledby="view-control-heading">
+                            <h4 id="view-control-heading" class="text-lg font-bold text-gray-800 mb-3 border-b pb-2">视图控制</h4>
+                            <button id="reset-view" class="w-full btn-secondary text-sm py-2" aria-label="重置相机视图到默认位置">
+                                重置视图
+                            </button>
+                        </div>
+
+                        <!-- 操作模式 -->
+                        <div role="group" aria-labelledby="operation-mode-heading">
+                            <h4 id="operation-mode-heading" class="text-lg font-bold text-gray-800 mb-3 border-b pb-2">操作模式</h4>
+                            <div class="space-y-2">
+                                <button id="enable-drag" class="w-full text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded transition-colors" aria-label="启用拖动模式，可以拖动模型零件" aria-pressed="false">
+                                    开启拖动
+                                </button>
+                                <button id="free-rotation" class="w-full text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded transition-colors" aria-label="启用自由转动模式，可以旋转和缩放视图" aria-pressed="false">
+                                    自由转动
+                                </button>
+                                <button id="disable-ops" class="w-full text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded transition-colors" aria-label="关闭所有操作模式">
+                                    关闭拖动/转动
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 模型操作 -->
+                        <div role="group" aria-labelledby="model-operations-heading">
+                            <h4 id="model-operations-heading" class="text-lg font-bold text-gray-800 mb-3 border-b pb-2">模型操作</h4>
+                            <div class="space-y-2">
+                                <button id="rotate-x" data-toggle="false" class="w-full text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded transition-colors" aria-label="切换绕X轴自动旋转" aria-pressed="false">
+                                    绕X轴旋转
+                                </button>
+                                <button id="rotate-y" data-toggle="false" class="w-full text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded transition-colors" aria-label="切换绕Y轴自动旋转" aria-pressed="false">
+                                    绕Y轴旋转
+                                </button>
+                                <button id="rotate-z" data-toggle="false" class="w-full text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded transition-colors" aria-label="切换绕Z轴自动旋转" aria-pressed="false">
+                                    绕Z轴旋转
+                                </button>
+                                <button id="expand-models" class="w-full text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded transition-colors" aria-label="展开所有模型零件以查看间距">
+                                    展开所有模型
+                                </button>
+                                <button id="reset-positions" class="w-full text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded transition-colors" aria-label="重置所有模型到初始位置和旋转">
+                                    重置模型位置
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 显示设置 -->
+                        <div role="group" aria-labelledby="display-settings-heading">
+                            <h4 id="display-settings-heading" class="text-lg font-bold text-gray-800 mb-3 border-b pb-2">显示设置</h4>
+                            <div class="space-y-2">
+                                <button id="toggle-axes" class="w-full text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded transition-colors" aria-label="切换坐标系显示或隐藏" aria-pressed="true">
+                                    坐标系显/隐
+                                </button>
+                                <button id="toggle-background" class="w-full text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded transition-colors" aria-label="在浅色和深色背景之间切换">
+                                    切换背景色
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 状态指示器 -->
+                        <div id="virtual-status-indicator" class="text-xs rounded p-2 text-center" style="background-color: #e8f3ff; color: #165DFF;" role="status" aria-live="polite" aria-atomic="true">
+                            初始化中...
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- 预览区域 (右侧弹性区域) -->
+                <div class="flex-1 relative">
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden relative" style="height: calc(100vh - 200px);">
+                        <!-- 3D Canvas -->
+                        <canvas id="virtual-canvas" class="w-full h-full" role="img" aria-label="3D模具模型视图"></canvas>
+                        
+                        <!-- 坐标系指示器 (左下角，HTML实现) -->
+                        <div class="axes-ui" id="coordinate-system" style="position: absolute; left: 20px; bottom: 20px; z-index: 9999; transform: scale(2); transform-origin: left bottom; background: rgba(255,255,255,0.8); padding: 15px; border-radius: 8px;">
+                            <div class="axis-origin" style="position: absolute; top: 10px; left: 10px; width: 6px; height: 6px; background: #000; border-radius: 50%; z-index: 1;"></div>
+                            <!-- X轴：水平向右 (红色) -->
+                            <div class="axis-x" style="position: absolute; top: 10px; left: 10px; width: 60px; height: 3px; background: #ff0000; transform: rotate(0deg); transform-origin: left center;">
+                                <div style="position: absolute; right: 0; top: -4px; width: 12px; height: 12px; background: #ff0000; clip-path: polygon(100% 50%, 0% 0%, 0% 100%);"></div>
+                                <div style="position: absolute; right: -10px; top: -5px; color: #ff0000; font-size: 14px; font-weight: bold;">X</div>
+                            </div>
+                            <!-- Y轴：垂直向上 (绿色) -->
+                            <div class="axis-y" style="position: absolute; top: 10px; left: 10px; width: 3px; height: 60px; background: #00ff00; transform: translateY(-100%); transform-origin: center bottom;">
+                                <div style="position: absolute; top: 0; left: -4px; width: 12px; height: 12px; background: #00ff00; clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>
+                                <div style="position: absolute; top: -10px; left: -5px; color: #00ff00; font-size: 14px; font-weight: bold;">Y</div>
+                            </div>
+                            <!-- Z轴：对角向观察者 (蓝色) -->
+                            <div class="axis-z" style="position: absolute; top: 10px; left: 10px; width: 60px; height: 3px; background: #0000ff; transform: rotate(-45deg); transform-origin: left center;">
+                                <div style="position: absolute; right: 0; top: -4px; width: 12px; height: 12px; background: #0000ff; clip-path: polygon(100% 50%, 0% 0%, 0% 100%);"></div>
+                                <div style="position: absolute; right: -10px; top: -5px; color: #0000ff; font-size: 14px; font-weight: bold;">Z</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -467,7 +672,12 @@
                 correctAnswers: 0,
                 sectionStats: {}
             },
-            modalConfirmCallback: null
+            modalConfirmCallback: null,
+            virtualMode: {
+                initialized: false,
+                viewer: null,
+                state: null
+            }
         };
 
         // 页面区域映射
@@ -477,17 +687,20 @@
             test: document.getElementById('test-mode-section'),
             result: document.getElementById('test-result-section'),
             stats: document.getElementById('stats-section'),
-            favorites: document.getElementById('favorites-section')
+            favorites: document.getElementById('favorites-section'),
+            virtual: document.getElementById('virtual-mode-section')
         };
 
         // 按钮事件监听
         document.getElementById('btn-learn-mode').addEventListener('click', startLearnMode);
         document.getElementById('btn-test-mode').addEventListener('click', startTestMode);
+        document.getElementById('btn-start-virtual').addEventListener('click', () => showSection('virtual'));
         document.getElementById('btn-back-to-welcome-from-learn').addEventListener('click', showWelcomeSection);
         document.getElementById('btn-back-to-welcome-from-test').addEventListener('click', showWelcomeSection);
         document.getElementById('btn-back-to-welcome-from-result').addEventListener('click', showWelcomeSection);
         document.getElementById('btn-back-to-welcome-from-stats').addEventListener('click', showWelcomeSection);
         document.getElementById('btn-back-to-welcome-from-favorites').addEventListener('click', showWelcomeSection);
+        document.getElementById('btn-return-from-virtual').addEventListener('click', showWelcomeSection);
         document.getElementById('btn-prev-question').addEventListener('click', showPreviousQuestion);
         document.getElementById('btn-next-question').addEventListener('click', showNextQuestion);
         document.getElementById('btn-submit-test').addEventListener('click', submitTest);
@@ -575,6 +788,11 @@
             }
             sections[sectionName].classList.remove('hidden');
             appState.currentMode = sectionName;
+            
+            // Initialize Virtual Mode when showing virtual section
+            if (sectionName === 'virtual') {
+                initializeVirtualMode();
+            }
         }
 
         // 显示欢迎页面
@@ -1415,6 +1633,2025 @@
             } catch (error) {
                 alert(`❌ 保存失败：${error.message}`);
             }
+        }
+
+        // Three.js Availability Check Function
+        function checkThreeJsAvailability() {
+            // Check if THREE is defined globally
+            if (typeof THREE === 'undefined') {
+                const statusIndicator = document.getElementById('virtual-status-indicator');
+                if (statusIndicator) {
+                    statusIndicator.innerHTML = '❌ Three.js 加载失败<br><small>请检查网络连接或刷新页面重试</small>';
+                    statusIndicator.className = 'text-xs text-white bg-red-500 border border-red-600 rounded p-2 text-center';
+                }
+                console.error('Three.js is not available. Please check CDN connection.');
+                return false;
+            }
+            
+            // Check if THREE.OrbitControls is defined
+            if (typeof THREE.OrbitControls === 'undefined') {
+                const statusIndicator = document.getElementById('virtual-status-indicator');
+                if (statusIndicator) {
+                    statusIndicator.innerHTML = '⚠️ OrbitControls 不可用<br><small>自由转动功能将被禁用</small>';
+                    statusIndicator.className = 'text-xs text-white bg-yellow-500 border border-yellow-600 rounded p-2 text-center';
+                }
+                console.warn('THREE.OrbitControls is not available. Free rotation mode will be disabled.');
+                // Return true to allow initialization without OrbitControls
+                return { available: true, orbitControlsAvailable: false };
+            }
+            
+            // Both libraries are available
+            return { available: true, orbitControlsAvailable: true };
+        }
+
+        // WebGL Support Detection Function
+        function checkWebGLSupport() {
+            try {
+                // Attempt to create canvas and get WebGL context
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                
+                // Check if WebGL context was successfully created
+                if (!gl) {
+                    const statusIndicator = document.getElementById('virtual-status-indicator');
+                    if (statusIndicator) {
+                        statusIndicator.innerHTML = '❌ 您的浏览器不支持 WebGL<br><small>请使用 Chrome、Firefox、Edge 或 Safari 浏览器</small>';
+                        statusIndicator.className = 'text-xs text-white bg-red-500 border border-red-600 rounded p-2 text-center';
+                    }
+                    console.error('WebGL is not supported in this browser.');
+                    return false;
+                }
+                
+                // WebGL is supported
+                return true;
+            } catch (e) {
+                // Error occurred during WebGL detection
+                const statusIndicator = document.getElementById('virtual-status-indicator');
+                if (statusIndicator) {
+                    statusIndicator.innerHTML = '❌ WebGL 检测失败<br><small>请更新浏览器或检查硬件加速设置</small>';
+                    statusIndicator.className = 'text-xs text-white bg-red-500 border border-red-600 rounded p-2 text-center';
+                }
+                console.error('Error detecting WebGL support:', e);
+                return false;
+            }
+        }
+
+        // StatusIndicator Class
+        class StatusIndicator {
+            /**
+             * Create a StatusIndicator instance
+             * @param {string} elementId - ID of the status indicator element
+             */
+            constructor(elementId) {
+                this.element = document.getElementById(elementId);
+                if (!this.element) {
+                    console.warn(`StatusIndicator: Element with id "${elementId}" not found`);
+                }
+            }
+
+            /**
+             * Show a status message with specified type
+             * @param {string} message - The message to display
+             * @param {string} type - The type of message ('info', 'success', 'error', 'loading')
+             */
+            show(message, type = 'info') {
+                if (!this.element) return;
+                
+                this.element.textContent = message;
+                
+                // Apply appropriate styling based on type
+                switch(type) {
+                    case 'loading':
+                        this.element.className = 'text-xs text-gray-700 bg-blue-50 border border-blue-200 rounded p-2 text-center';
+                        break;
+                    case 'success':
+                        this.element.className = 'text-xs text-green-700 bg-green-50 border border-green-200 rounded p-2 text-center';
+                        break;
+                    case 'error':
+                        this.element.className = 'text-xs text-white bg-red-500 border border-red-600 rounded p-2 text-center';
+                        break;
+                    case 'info':
+                    default:
+                        this.element.className = 'text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded p-2 text-center';
+                        break;
+                }
+            }
+
+            /**
+             * Show a loading message
+             * @param {string} message - The loading message to display
+             */
+            showLoading(message) {
+                this.show(`⏳ ${message}`, 'loading');
+            }
+
+            /**
+             * Show a success message
+             * @param {string} message - The success message to display
+             */
+            showSuccess(message) {
+                this.show(`✅ ${message}`, 'success');
+            }
+
+            /**
+             * Show an error message
+             * @param {string} message - The error message to display
+             */
+            showError(message) {
+                this.show(`❌ ${message}`, 'error');
+            }
+
+            /**
+             * Show an info message
+             * @param {string} message - The info message to display
+             */
+            showInfo(message) {
+                this.show(`ℹ️ ${message}`, 'info');
+            }
+        }
+
+        // ModelLoader Class
+        class ModelLoader {
+            constructor() {
+                // Initialize THREE.GLTFLoader instance
+                this.loader = new THREE.GLTFLoader();
+                
+                // Set up DRACOLoader for compressed models
+                if (typeof THREE.DRACOLoader !== 'undefined') {
+                    const dracoLoader = new THREE.DRACOLoader();
+                    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.4.1/');
+                    this.loader.setDRACOLoader(dracoLoader);
+                    console.log('✅ DRACOLoader configured');
+                } else {
+                    console.warn('⚠️ DRACOLoader not available - compressed models may fail to load');
+                }
+                
+                // Create loadingQueue array to track loading operations
+                this.loadingQueue = [];
+                
+                // Create loadedModels Map to store loaded models
+                this.loadedModels = new Map();
+                
+                // Define model path mappings for b_type and m_type
+                this.modelPaths = {
+                    b_type: {
+                        core: [
+                            'b_3D_glb/core.glb',
+                            'b_3D_glb/a_plate.glb',
+                            'b_3D_glb/b_plate.glb',
+                            'b_3D_glb/base1.glb',
+                            'b_3D_glb/base2.glb',
+                            'b_3D_glb/connector.glb',
+                            'b_3D_glb/locating_ring.glb',
+                            'b_3D_glb/spring.glb',
+                            'b_3D_glb/sprue_bush.glb',
+                            'b_3D_glb/stop.glb',
+                            'b_3D_glb/t_plate.glb',
+                            'b_3D_glb/u_plate.glb'
+                        ],
+                        cavity: ['b_3D_glb/cavity.glb'],
+                        part: [] // No part model specified for b_type yet
+                    },
+                    m_type: {
+                        core: [
+                            'm_3D_glb/core.glb',
+                            'm_3D_glb/a_plate.glb',
+                            'm_3D_glb/a_screw.glb',
+                            'm_3D_glb/b_plate.glb',
+                            'm_3D_glb/b_screw.glb',
+                            'm_3D_glb/base.glb',
+                            'm_3D_glb/connector.glb',
+                            'm_3D_glb/o_ring.glb',
+                            'm_3D_glb/push.glb',
+                            'm_3D_glb/ring.glb',
+                            'm_3D_glb/spring.glb',
+                            'm_3D_glb/sprue.glb',
+                            'm_3D_glb/stop.glb',
+                            'm_3D_glb/t_plate.glb'
+                        ],
+                        cavity: ['m_3D_glb/cavity.glb'],
+                        part: [] // No part model specified for m_type yet
+                    }
+                };
+            }
+
+            /**
+             * Load a GLB file asynchronously
+             * @param {string} path - Path to the GLB file
+             * @returns {Promise<THREE.Group>} Promise that resolves with the loaded scene
+             */
+            async loadGLB(path) {
+                return new Promise((resolve, reject) => {
+                    this.loader.load(
+                        path,
+                        // Success callback
+                        (gltf) => {
+                            resolve(gltf.scene);
+                        },
+                        // Progress callback
+                        (progress) => {
+                            if (progress.total > 0) {
+                                const percent = (progress.loaded / progress.total) * 100;
+                                console.log(`Loading ${path}: ${percent.toFixed(2)}%`);
+                            }
+                        },
+                        // Error callback
+                        (error) => {
+                            console.error(`Failed to load GLB file: ${path}`, error);
+                            reject(error);
+                        }
+                    );
+                });
+            }
+
+            /**
+             * Create fallback geometry when model loading fails
+             * @param {string} type - Type of model (core, cavity, part)
+             * @returns {THREE.Mesh} Simple box mesh as fallback
+             */
+            createFallbackGeometry(type) {
+                // Create simple BoxGeometry with dimensions 1x1x1
+                const geometry = new THREE.BoxGeometry(1, 1, 1);
+                
+                // Create MeshStandardMaterial with appropriate color based on type
+                let color;
+                switch(type) {
+                    case 'core':
+                        color = 0xff6b6b; // Red for core
+                        break;
+                    case 'cavity':
+                        color = 0x4ecdc4; // Cyan for cavity
+                        break;
+                    case 'part':
+                        color = 0xffe66d; // Yellow for part
+                        break;
+                    default:
+                        color = 0x888888; // Gray for unknown
+                }
+                
+                const material = new THREE.MeshStandardMaterial({ 
+                    color: color,
+                    roughness: 0.7,
+                    metalness: 0.3
+                });
+                
+                // Return Mesh object as fallback
+                return new THREE.Mesh(geometry, material);
+            }
+
+            /**
+             * Load model with fallback support
+             * @param {string} type - Type of model (core, cavity, part)
+             * @param {string} path - Path to the GLB file
+             * @param {THREE.Scene} scene - Three.js scene to add model to
+             * @param {Map} originalStates - Map to store original model states
+             * @returns {Promise<THREE.Group|THREE.Mesh>} Promise that resolves with the loaded model or fallback
+             */
+            async loadModelWithFallback(type, path, scene, originalStates) {
+                try {
+                    // Try to load model using loadGLB()
+                    const model = await this.loadGLB(path);
+                    
+                    // On success, add model to scene
+                    scene.add(model);
+                    
+                    // Store original state (position and rotation)
+                    originalStates.set(type, {
+                        position: model.position.clone(),
+                        rotation: model.rotation.clone()
+                    });
+                    
+                    // Display status message
+                    console.log(`✅ Successfully loaded ${type} model from ${path}`);
+                    
+                    return model;
+                } catch (error) {
+                    // On failure, log error to console with details
+                    console.error(`❌ Failed to load ${type} model from ${path}:`, error);
+                    console.warn(`⚠️ Using fallback geometry for ${type} model. Check if the file exists at: ${path}`);
+                    
+                    // Create fallback geometry
+                    const fallbackModel = this.createFallbackGeometry(type);
+                    
+                    // Add fallback to scene
+                    scene.add(fallbackModel);
+                    
+                    // Store original state for fallback
+                    originalStates.set(type, {
+                        position: fallbackModel.position.clone(),
+                        rotation: fallbackModel.rotation.clone()
+                    });
+                    
+                    // Display actionable status message to user
+                    const statusIndicator = document.getElementById('virtual-status-indicator');
+                    if (statusIndicator) {
+                        statusIndicator.innerHTML = `⚠️ ${this.getModelDisplayName(type)}模型加载失败<br><small>使用简化几何体代替</small>`;
+                        statusIndicator.className = 'text-xs text-white bg-yellow-500 border border-yellow-600 rounded p-2 text-center';
+                    }
+                    
+                    return fallbackModel;
+                }
+            }
+            
+            /**
+             * Get display name for model type
+             * @param {string} type - Type of model (core, cavity, part)
+             * @returns {string} Display name in Chinese
+             */
+            getModelDisplayName(type) {
+                const names = {
+                    core: '型芯',
+                    cavity: '型腔',
+                    part: '产品'
+                };
+                return names[type] || type;
+            }
+        }
+
+        // VirtualModeState Class
+        class VirtualModeState {
+            constructor() {
+                // Define state object with visibility, positions, rotations, camera, background
+                this.state = {
+                    visibility: {
+                        core: true,
+                        cavity: false,
+                        part: false,
+                        coordinateSystem: true
+                    },
+                    positions: {},
+                    rotations: {},
+                    camera: {
+                        position: { x: 0, y: 5, z: 8 },
+                        target: { x: 0, y: 0, z: 0 }
+                    },
+                    background: 'light',
+                    operationMode: 'none',
+                    activeRotations: { x: false, y: false, z: false }
+                };
+            }
+
+            // Save state to sessionStorage
+            saveState() {
+                try {
+                    // Convert positions and rotations objects to serializable format
+                    const serializableState = {
+                        ...this.state,
+                        positions: this.state.positions,
+                        rotations: this.state.rotations
+                    };
+                    sessionStorage.setItem('virtualModeState', JSON.stringify(serializableState));
+                } catch (error) {
+                    console.error('Failed to save state:', error);
+                }
+            }
+
+            // Load state from sessionStorage
+            loadState() {
+                try {
+                    const saved = sessionStorage.getItem('virtualModeState');
+                    if (saved) {
+                        const loadedState = JSON.parse(saved);
+                        this.state = {
+                            ...this.state,
+                            ...loadedState
+                        };
+                        return true;
+                    }
+                    return false;
+                } catch (error) {
+                    console.error('Failed to load state:', error);
+                    return false;
+                }
+            }
+
+            // Update visibility state for a specific model type
+            updateVisibility(type, visible) {
+                if (this.state.visibility.hasOwnProperty(type)) {
+                    this.state.visibility[type] = visible;
+                    this.saveState();
+                }
+            }
+
+            // Save model state (position and rotation)
+            saveModelState(type, position, rotation) {
+                // Store position
+                this.state.positions[type] = {
+                    x: position.x,
+                    y: position.y,
+                    z: position.z
+                };
+                
+                // Store rotation
+                this.state.rotations[type] = {
+                    x: rotation.x,
+                    y: rotation.y,
+                    z: rotation.z
+                };
+                
+                this.saveState();
+            }
+
+            // Save camera state (position and target)
+            saveCameraState(position, target) {
+                this.state.camera = {
+                    position: {
+                        x: position.x,
+                        y: position.y,
+                        z: position.z
+                    },
+                    target: {
+                        x: target.x,
+                        y: target.y,
+                        z: target.z
+                    }
+                };
+                this.saveState();
+            }
+
+            // Reset state to default values
+            reset() {
+                this.state = {
+                    visibility: {
+                        core: true,
+                        cavity: false,
+                        part: false,
+                        coordinateSystem: true
+                    },
+                    positions: {},
+                    rotations: {},
+                    camera: {
+                        position: { x: 0, y: 5, z: 8 },
+                        target: { x: 0, y: 0, z: 0 }
+                    },
+                    background: 'light',
+                    operationMode: 'none',
+                    activeRotations: { x: false, y: false, z: false }
+                };
+                this.saveState();
+            }
+        }
+
+        // VirtualModeViewer Class
+        class VirtualModeViewer {
+            constructor(canvasId, stateManager) {
+                // Canvas reference
+                this.canvas = document.getElementById(canvasId);
+                
+                // State manager reference
+                this.stateManager = stateManager;
+                
+                // Three.js core components
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.controls = null;
+                
+                // Model loader instance
+                this.modelLoader = new ModelLoader();
+                
+                // Models object for core, cavity, part
+                this.models = {
+                    core: null,
+                    cavity: null,
+                    part: null
+                };
+                
+                // Original states Map for storing initial positions/rotations
+                this.originalStates = new Map();
+                
+                // Operation mode tracking properties
+                this.operationMode = 'none'; // 'none', 'drag', 'freeRotation'
+                this.activeRotations = {
+                    x: false,
+                    y: false,
+                    z: false
+                };
+                this.selectedObject = null;
+                this.isDragging = false;
+                
+                // Raycaster and mouse vector for interactions
+                this.raycaster = new THREE.Raycaster();
+                this.mouse = new THREE.Vector2();
+                
+                // Coordinate system visibility state
+                this.coordinateSystemVisible = true;
+                
+                // Default mold type (can be changed later)
+                this.moldType = 'b_type';
+            }
+            
+            // Set mold type (b_type or m_type)
+            setMoldType(type) {
+                if (type === 'b_type' || type === 'm_type') {
+                    this.moldType = type;
+                    console.log(`🔧 Mold type set to: ${type}`);
+                } else {
+                    console.warn(`⚠️ Invalid mold type: ${type}, using default b_type`);
+                    this.moldType = 'b_type';
+                }
+            }
+
+            // Initialize scene, camera, renderer, and lights
+            init() {
+                try {
+                    // Check if canvas exists
+                    if (!this.canvas) {
+                        throw new Error('Canvas element not found');
+                    }
+                    
+                    // Check if canvas has valid dimensions
+                    if (this.canvas.clientWidth === 0 || this.canvas.clientHeight === 0) {
+                        throw new Error('Canvas has invalid dimensions');
+                    }
+                    
+                    // Create Three.js Scene
+                    this.scene = new THREE.Scene();
+                    
+                    // Create PerspectiveCamera with FOV 60, aspect ratio, near 0.1, far 1000
+                    const aspect = this.canvas.clientWidth / this.canvas.clientHeight;
+                    this.camera = new THREE.PerspectiveCamera(60, aspect, 0.1, 1000);
+                    
+                    // Position camera at (0, 5, 8)
+                    this.camera.position.set(0, 5, 8);
+                    
+                    // Create WebGLRenderer with antialias and high-performance settings
+                    try {
+                        this.renderer = new THREE.WebGLRenderer({
+                            canvas: this.canvas,
+                            antialias: true,
+                            powerPreference: 'high-performance'
+                        });
+                    } catch (rendererError) {
+                        console.error('Renderer creation failed:', rendererError);
+                        this.updateStatus('❌ 3D 渲染器初始化失败<br><small>请检查浏览器设置或更新显卡驱动</small>');
+                        throw new Error('3D 渲染器初始化失败');
+                    }
+                    
+                    // Verify renderer was created successfully
+                    if (!this.renderer) {
+                        this.updateStatus('❌ 3D 渲染器初始化失败<br><small>请检查浏览器设置或更新显卡驱动</small>');
+                        throw new Error('3D 渲染器初始化失败');
+                    }
+                    
+                    // Set renderer size to canvas dimensions
+                    this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight);
+                    
+                    // Set pixel ratio to min(devicePixelRatio, 1)
+                    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
+                    
+                    // Set background color to 0xf5f7fa
+                    this.scene.background = new THREE.Color(0xf5f7fa);
+                    
+                    // Add AmbientLight with color 0xffffff and intensity 1.5
+                    const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+                    this.scene.add(ambientLight);
+                    
+                    // Add DirectionalLight at position (5, 10, 7.5) with intensity 0.8
+                    const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
+                    directionalLight1.position.set(5, 10, 7.5);
+                    this.scene.add(directionalLight1);
+                    
+                    // Add second DirectionalLight at position (-5, -10, -7.5) with intensity 0.5
+                    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
+                    directionalLight2.position.set(-5, -10, -7.5);
+                    this.scene.add(directionalLight2);
+                    
+                    // Add GridHelper to scene for spatial reference
+                    const gridHelper = new THREE.GridHelper(10, 10);
+                    this.scene.add(gridHelper);
+                    
+                    // Initialize OrbitControls if available
+                    if (typeof THREE.OrbitControls !== 'undefined') {
+                        this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+                        this.controls.enabled = false; // Disabled by default
+                        this.controls.enableDamping = true;
+                        this.controls.dampingFactor = 0.05;
+                        this.controls.minDistance = 2;
+                        this.controls.maxDistance = 30;
+                        this.controls.enablePan = false;
+                        this.orbitControlsAvailable = true;
+                    } else {
+                        // OrbitControls not available - disable free rotation feature
+                        this.controls = null;
+                        this.orbitControlsAvailable = false;
+                        console.warn('OrbitControls not available. Free rotation mode will be disabled.');
+                        
+                        // Disable the free rotation button
+                        const freeRotationBtn = document.getElementById('free-rotation');
+                        if (freeRotationBtn) {
+                            freeRotationBtn.disabled = true;
+                            freeRotationBtn.title = 'OrbitControls 不可用';
+                            freeRotationBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                        }
+                    }
+                } catch (error) {
+                    // Log error to console
+                    console.error('Scene initialization error:', error);
+                    
+                    // Display error message to user
+                    const statusIndicator = document.getElementById('virtual-status-indicator');
+                    if (statusIndicator) {
+                        statusIndicator.innerHTML = (error.message || '❌ 初始化失败') + '<br><small>请刷新页面重试</small>';
+                        statusIndicator.className = 'text-xs text-white bg-red-500 border border-red-600 rounded p-2 text-center';
+                    }
+                    
+                    // Re-throw error to be caught by initializeVirtualMode
+                    throw error;
+                }
+            }
+
+            // Load initial models (core model visible by default)
+            async loadInitialModels() {
+                this.updateStatus('⏳ 加载模型中...');
+                
+                try {
+                    // Load all core components
+                    const corePaths = this.modelLoader.modelPaths[this.moldType].core;
+                    if (corePaths && corePaths.length > 0) {
+                        // Create a group to hold all core components
+                        this.models.core = new THREE.Group();
+                        this.models.core.userData = { type: 'core' };
+                        this.scene.add(this.models.core);
+                        
+                        // Load all core components
+                        for (const path of corePaths) {
+                            try {
+                                const component = await this.modelLoader.loadModelWithFallback(
+                                    'core', 
+                                    path, 
+                                    this.models.core, // Add to core group instead of scene
+                                    this.originalStates
+                                );
+                                console.log(`✅ Loaded core component: ${path}`);
+                            } catch (error) {
+                                console.warn(`⚠️ Failed to load core component: ${path}`, error);
+                            }
+                        }
+                        
+                        // Calculate bounding box and scale
+                        const coreBox = new THREE.Box3().setFromObject(this.models.core);
+                        const coreSize = new THREE.Vector3();
+                        coreBox.getSize(coreSize);
+                        const maxDim = Math.max(coreSize.x, coreSize.y, coreSize.z);
+                        
+                        if (maxDim > 0 && maxDim < 1) {
+                            // Model is too small, scale it up
+                            const scaleFactor = 3 / maxDim; // Scale to approximately 3 units
+                            this.models.core.scale.set(scaleFactor, scaleFactor, scaleFactor);
+                            console.log(`🔍 Core scaled by ${scaleFactor.toFixed(2)}x (original size: ${maxDim.toFixed(4)})`);
+                        }
+                        
+                        // Set visibility
+                        this.models.core.visible = true;
+                        this.models.core.traverse((child) => {
+                            if (child.isMesh) {
+                                child.visible = true;
+                            }
+                        });
+                        
+                        // Store original state
+                        this.originalStates.set('core', {
+                            position: this.models.core.position.clone(),
+                            rotation: this.models.core.rotation.clone(),
+                            scale: this.models.core.scale.clone()
+                        });
+                        
+                        console.log(`✅ Core model loaded with ${corePaths.length} components, visible: ${this.models.core.visible}`);
+                    }
+                    
+                    // Load cavity model
+                    const cavityPaths = this.modelLoader.modelPaths[this.moldType].cavity;
+                    if (cavityPaths && cavityPaths.length > 0) {
+                        // Create a group to hold all cavity components
+                        this.models.cavity = new THREE.Group();
+                        this.models.cavity.userData = { type: 'cavity' };
+                        this.scene.add(this.models.cavity);
+                        
+                        // Load all cavity components
+                        for (const path of cavityPaths) {
+                            try {
+                                const component = await this.modelLoader.loadModelWithFallback(
+                                    'cavity', 
+                                    path, 
+                                    this.models.cavity,
+                                    this.originalStates
+                                );
+                                console.log(`✅ Loaded cavity component: ${path}`);
+                            } catch (error) {
+                                console.warn(`⚠️ Failed to load cavity component: ${path}`, error);
+                            }
+                        }
+                        
+                        // Calculate bounding box and scale
+                        const cavityBox = new THREE.Box3().setFromObject(this.models.cavity);
+                        const cavitySize = new THREE.Vector3();
+                        cavityBox.getSize(cavitySize);
+                        const maxDim = Math.max(cavitySize.x, cavitySize.y, cavitySize.z);
+                        
+                        if (maxDim > 0 && maxDim < 1) {
+                            // Model is too small, scale it up
+                            const scaleFactor = 3 / maxDim;
+                            this.models.cavity.scale.set(scaleFactor, scaleFactor, scaleFactor);
+                            console.log(`🔍 Cavity scaled by ${scaleFactor.toFixed(2)}x (original size: ${maxDim.toFixed(4)})`);
+                        }
+                        
+                        // Set visibility (hidden by default)
+                        this.models.cavity.visible = false;
+                        this.models.cavity.traverse((child) => {
+                            if (child.isMesh) {
+                                child.visible = false;
+                            }
+                        });
+                        
+                        // Store original state
+                        this.originalStates.set('cavity', {
+                            position: this.models.cavity.position.clone(),
+                            rotation: this.models.cavity.rotation.clone(),
+                            scale: this.models.cavity.scale.clone()
+                        });
+                        
+                        console.log(`✅ Cavity model loaded with ${cavityPaths.length} components, visible: ${this.models.cavity.visible}`);
+                    }
+                    
+                    // Load part model (if available)
+                    const partPaths = this.modelLoader.modelPaths[this.moldType].part;
+                    if (partPaths && partPaths.length > 0) {
+                        // Create a group to hold all part components
+                        this.models.part = new THREE.Group();
+                        this.models.part.userData = { type: 'part' };
+                        this.scene.add(this.models.part);
+                        
+                        // Load all part components
+                        for (const path of partPaths) {
+                            try {
+                                const component = await this.modelLoader.loadModelWithFallback(
+                                    'part', 
+                                    path, 
+                                    this.models.part,
+                                    this.originalStates
+                                );
+                                console.log(`✅ Loaded part component: ${path}`);
+                            } catch (error) {
+                                console.warn(`⚠️ Failed to load part component: ${path}`, error);
+                            }
+                        }
+                        
+                        // Calculate bounding box and scale
+                        const partBox = new THREE.Box3().setFromObject(this.models.part);
+                        const partSize = new THREE.Vector3();
+                        partBox.getSize(partSize);
+                        const maxDim = Math.max(partSize.x, partSize.y, partSize.z);
+                        
+                        if (maxDim > 0 && maxDim < 1) {
+                            // Model is too small, scale it up
+                            const scaleFactor = 3 / maxDim;
+                            this.models.part.scale.set(scaleFactor, scaleFactor, scaleFactor);
+                            console.log(`🔍 Part scaled by ${scaleFactor.toFixed(2)}x (original size: ${maxDim.toFixed(4)})`);
+                        }
+                        
+                        // Set visibility (hidden by default)
+                        this.models.part.visible = false;
+                        this.models.part.traverse((child) => {
+                            if (child.isMesh) {
+                                child.visible = false;
+                            }
+                        });
+                        
+                        // Store original state
+                        this.originalStates.set('part', {
+                            position: this.models.part.position.clone(),
+                            rotation: this.models.part.rotation.clone(),
+                            scale: this.models.part.scale.clone()
+                        });
+                        
+                        console.log(`✅ Part model loaded with ${partPaths.length} components, visible: ${this.models.part.visible}`);
+                    } else {
+                        // Create placeholder for part if no GLB file available
+                        const partGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.8, 32);
+                        const partMaterial = new THREE.MeshStandardMaterial({ color: 0x2ecc71 });
+                        this.models.part = new THREE.Mesh(partGeometry, partMaterial);
+                        this.models.part.position.set(0, 0.4, 0);
+                        this.models.part.visible = false;
+                        this.models.part.userData = { type: 'part' };
+                        this.scene.add(this.models.part);
+                        
+                        // Store original state
+                        this.originalStates.set('part', {
+                            position: this.models.part.position.clone(),
+                            rotation: this.models.part.rotation.clone()
+                        });
+                        console.log('✅ Part placeholder created, visible:', this.models.part.visible);
+                    }
+                    
+                    // Log all models status
+                    console.log('📊 Models status:', {
+                        core: this.models.core ? `loaded (visible: ${this.models.core.visible})` : 'null',
+                        cavity: this.models.cavity ? `loaded (visible: ${this.models.cavity.visible})` : 'null',
+                        part: this.models.part ? `loaded (visible: ${this.models.part.visible})` : 'null'
+                    });
+                    
+                    this.updateStatus('✅ 模型加载完成');
+                    this.render();
+                } catch (error) {
+                    console.error('Error loading models:', error);
+                    this.updateStatus('❌ 模型加载失败');
+                }
+            }
+
+            // Show a model by type (core, cavity, part)
+            showModel(type) {
+                if (this.models[type]) {
+                    // Set visibility for the model and all its children
+                    this.models[type].visible = true;
+                    this.models[type].traverse((child) => {
+                        if (child.isMesh) {
+                            child.visible = true;
+                        }
+                    });
+                    this.render();
+                    this.updateStatus(`✅ ${this.getModelName(type)}已显示`);
+                    
+                    // Save state on visibility changes
+                    if (this.stateManager) {
+                        this.stateManager.updateVisibility(type, true);
+                    }
+                }
+            }
+
+            // Hide a model by type (core, cavity, part)
+            hideModel(type) {
+                if (this.models[type]) {
+                    // Set visibility for the model and all its children
+                    this.models[type].visible = false;
+                    this.models[type].traverse((child) => {
+                        if (child.isMesh) {
+                            child.visible = false;
+                        }
+                    });
+                    this.render();
+                    this.updateStatus(`❌ ${this.getModelName(type)}已隐藏`);
+                    
+                    // Save state on visibility changes
+                    if (this.stateManager) {
+                        this.stateManager.updateVisibility(type, false);
+                    }
+                }
+            }
+
+            // Get model display name
+            getModelName(type) {
+                const names = {
+                    core: '型芯',
+                    cavity: '型腔',
+                    part: '产品'
+                };
+                return names[type] || type;
+            }
+
+            // Update status indicator
+            updateStatus(message) {
+                const statusIndicator = document.getElementById('virtual-status-indicator');
+                if (statusIndicator) {
+                    // Support HTML content in messages
+                    if (message.includes('<br>') || message.includes('<small>')) {
+                        statusIndicator.innerHTML = message;
+                    } else {
+                        statusIndicator.textContent = message;
+                    }
+                    // Use consistent styling like mold_test.html
+                    statusIndicator.style.backgroundColor = '#e8f3ff';
+                    statusIndicator.style.color = '#165DFF';
+                    statusIndicator.style.border = '1px solid #165DFF';
+                }
+            }
+
+            // Toggle axis rotation for specified axis (x, y, or z)
+            toggleAxisRotation(axis) {
+                // Toggle activeRotations state for specified axis
+                this.activeRotations[axis] = !this.activeRotations[axis];
+                
+                // Deactivate other operation modes when activated
+                if (this.activeRotations[axis]) {
+                    // Disable drag mode
+                    if (this.operationMode === 'drag') {
+                        this.disableAllModes();
+                    }
+                    // Disable free rotation mode
+                    if (this.operationMode === 'freeRotation') {
+                        this.disableAllModes();
+                    }
+                }
+                
+                // Update button styling to show active state
+                const buttonId = `rotate-${axis}`;
+                const button = document.getElementById(buttonId);
+                if (button) {
+                    if (this.activeRotations[axis]) {
+                        button.classList.add('btn-toggle-active');
+                        button.classList.remove('bg-gray-100', 'hover:bg-gray-200', 'text-gray-700');
+                        button.setAttribute('aria-pressed', 'true');
+                    } else {
+                        button.classList.remove('btn-toggle-active');
+                        button.classList.add('bg-gray-100', 'hover:bg-gray-200', 'text-gray-700');
+                        button.setAttribute('aria-pressed', 'false');
+                    }
+                }
+                
+                // Display status message indicating rotation state
+                const axisName = axis.toUpperCase();
+                if (this.activeRotations[axis]) {
+                    this.updateStatus(`✅ 绕${axisName}轴旋转已启用`);
+                } else {
+                    this.updateStatus(`⏸️ 绕${axisName}轴旋转已停止`);
+                }
+            }
+
+            // Disable all operation modes
+            disableAllModes() {
+                // Set operationMode to 'none'
+                this.operationMode = 'none';
+                
+                // Disable OrbitControls
+                if (this.controls) {
+                    this.controls.enabled = false;
+                }
+                
+                // Stop all axis rotations
+                this.activeRotations.x = false;
+                this.activeRotations.y = false;
+                this.activeRotations.z = false;
+                
+                // Reset cursor to default
+                this.canvas.style.cursor = 'default';
+                
+                // Deselect any selected model
+                this.selectedObject = null;
+                this.isDragging = false;
+                
+                // Update button styling for all rotation buttons
+                ['x', 'y', 'z'].forEach(axis => {
+                    const button = document.getElementById(`rotate-${axis}`);
+                    if (button) {
+                        button.classList.remove('btn-toggle-active');
+                        button.classList.add('bg-gray-100', 'hover:bg-gray-200', 'text-gray-700');
+                        button.setAttribute('aria-pressed', 'false');
+                    }
+                });
+                
+                // Update button styling for operation mode buttons
+                const dragBtn = document.getElementById('enable-drag');
+                const freeRotBtn = document.getElementById('free-rotation');
+                if (dragBtn) {
+                    dragBtn.classList.remove('btn-toggle-active');
+                    dragBtn.classList.add('bg-gray-100', 'hover:bg-gray-200', 'text-gray-700');
+                    dragBtn.setAttribute('aria-pressed', 'false');
+                }
+                if (freeRotBtn) {
+                    freeRotBtn.classList.remove('btn-toggle-active');
+                    freeRotBtn.classList.add('bg-gray-100', 'hover:bg-gray-200', 'text-gray-700');
+                    freeRotBtn.setAttribute('aria-pressed', 'false');
+                }
+            }
+
+            // Enable drag mode - allows dragging individual model parts
+            enableDragMode() {
+                // Deactivate other operation modes first
+                this.disableAllModes();
+                
+                // Set operationMode to 'drag'
+                this.operationMode = 'drag';
+                
+                // Disable OrbitControls if they exist
+                if (this.controls) {
+                    this.controls.enabled = false;
+                }
+                
+                // Change cursor to 'move'
+                this.canvas.style.cursor = 'move';
+                
+                // Stop all axis rotations
+                this.activeRotations.x = false;
+                this.activeRotations.y = false;
+                this.activeRotations.z = false;
+                
+                // Update button styling for drag button
+                const dragBtn = document.getElementById('enable-drag');
+                if (dragBtn) {
+                    dragBtn.classList.add('btn-toggle-active');
+                    dragBtn.classList.remove('bg-gray-100', 'hover:bg-gray-200', 'text-gray-700');
+                    dragBtn.setAttribute('aria-pressed', 'true');
+                }
+                
+                // Display status message
+                this.updateStatus('✅ 拖动模式已启用');
+            }
+
+            // Enable free rotation mode - allows free camera rotation using OrbitControls
+            enableFreeRotation() {
+                // Check if OrbitControls is available
+                if (!this.orbitControlsAvailable || !this.controls) {
+                    this.updateStatus('❌ 自由转动功能不可用<br><small>OrbitControls 未加载</small>');
+                    return;
+                }
+                
+                // Deactivate other operation modes first
+                this.disableAllModes();
+                
+                // Set operationMode to 'freeRotation'
+                this.operationMode = 'freeRotation';
+                
+                // Enable OrbitControls with damping
+                if (this.controls) {
+                    this.controls.enabled = true;
+                    // Set damping factor to 0.05
+                    this.controls.enableDamping = true;
+                    this.controls.dampingFactor = 0.05;
+                    // Set minDistance to 2 and maxDistance to 30
+                    this.controls.minDistance = 2;
+                    this.controls.maxDistance = 30;
+                    // Disable panning
+                    this.controls.enablePan = false;
+                }
+                
+                // Change cursor to 'grab'
+                this.canvas.style.cursor = 'grab';
+                
+                // Stop all axis rotations
+                this.activeRotations.x = false;
+                this.activeRotations.y = false;
+                this.activeRotations.z = false;
+                
+                // Update button styling for free rotation button
+                const freeRotBtn = document.getElementById('free-rotation');
+                if (freeRotBtn) {
+                    freeRotBtn.classList.add('btn-toggle-active');
+                    freeRotBtn.classList.remove('bg-gray-100', 'hover:bg-gray-200', 'text-gray-700');
+                    freeRotBtn.setAttribute('aria-pressed', 'true');
+                }
+                
+                // Display status message
+                this.updateStatus('✅ 自由转动模式已启用');
+            }
+
+            // Mouse event handler for mouse down - detect model selection using raycaster
+            onMouseDown(event) {
+                // Only process if in drag mode
+                if (this.operationMode !== 'drag') {
+                    return;
+                }
+                
+                // Calculate mouse position in normalized device coordinates (-1 to +1)
+                const rect = this.canvas.getBoundingClientRect();
+                this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+                
+                // Update raycaster with camera and mouse position
+                this.raycaster.setFromCamera(this.mouse, this.camera);
+                
+                // Get all visible models for raycasting
+                const visibleModels = [];
+                Object.keys(this.models).forEach(type => {
+                    const model = this.models[type];
+                    if (model && model.visible) {
+                        visibleModels.push(model);
+                    }
+                });
+                
+                // Perform raycasting to detect intersections
+                const intersects = this.raycaster.intersectObjects(visibleModels, true);
+                
+                // If an object was clicked, select it
+                if (intersects.length > 0) {
+                    // Find the top-level model (core, cavity, or part)
+                    let selectedModel = intersects[0].object;
+                    while (selectedModel.parent && !Object.values(this.models).includes(selectedModel)) {
+                        selectedModel = selectedModel.parent;
+                    }
+                    
+                    this.selectedObject = selectedModel;
+                    this.isDragging = true;
+                    this.canvas.style.cursor = 'grabbing';
+                    
+                    // Find the model type
+                    let modelType = null;
+                    Object.keys(this.models).forEach(type => {
+                        if (this.models[type] === selectedModel) {
+                            modelType = type;
+                        }
+                    });
+                    
+                    if (modelType) {
+                        this.updateStatus(`🖱️ 已选中${this.getModelName(modelType)}`);
+                    }
+                }
+            }
+            
+            // Mouse event handler for mouse move - update selected model position
+            onMouseMove(event) {
+                // Only process if in drag mode and an object is selected
+                if (this.operationMode !== 'drag' || !this.isDragging || !this.selectedObject) {
+                    return;
+                }
+                
+                // Calculate mouse position in normalized device coordinates
+                const rect = this.canvas.getBoundingClientRect();
+                this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+                
+                // Update raycaster
+                this.raycaster.setFromCamera(this.mouse, this.camera);
+                
+                // Create a plane at the object's current Z position for dragging
+                const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -this.selectedObject.position.z);
+                const intersection = new THREE.Vector3();
+                
+                // Calculate intersection point with the plane
+                this.raycaster.ray.intersectPlane(plane, intersection);
+                
+                if (intersection) {
+                    // Update the selected object's position
+                    this.selectedObject.position.x = intersection.x;
+                    this.selectedObject.position.y = intersection.y;
+                }
+            }
+            
+            // Mouse event handler for mouse up - deselect model
+            onMouseUp(event) {
+                // Only process if in drag mode
+                if (this.operationMode !== 'drag') {
+                    return;
+                }
+                
+                // Deselect the object
+                if (this.isDragging && this.selectedObject) {
+                    // Save state on model position/rotation changes
+                    if (this.stateManager) {
+                        // Find the model type
+                        let modelType = null;
+                        Object.keys(this.models).forEach(type => {
+                            if (this.models[type] === this.selectedObject) {
+                                modelType = type;
+                            }
+                        });
+                        
+                        if (modelType) {
+                            this.stateManager.saveModelState(
+                                modelType,
+                                this.selectedObject.position,
+                                this.selectedObject.rotation
+                            );
+                        }
+                    }
+                    
+                    this.selectedObject = null;
+                    this.isDragging = false;
+                    this.canvas.style.cursor = 'move';
+                    this.updateStatus('✅ 拖动模式已启用');
+                }
+            }
+
+            // Reset view to default camera position and stop all rotations
+            resetView() {
+                // Stop all active axis rotations
+                this.activeRotations.x = false;
+                this.activeRotations.y = false;
+                this.activeRotations.z = false;
+                
+                // Update button styling for all rotation buttons
+                ['x', 'y', 'z'].forEach(axis => {
+                    const button = document.getElementById(`rotate-${axis}`);
+                    if (button) {
+                        button.classList.remove('btn-toggle-active');
+                        button.classList.add('bg-gray-100', 'hover:bg-gray-200', 'text-gray-700');
+                        button.setAttribute('aria-pressed', 'false');
+                    }
+                });
+                
+                // Reset all model rotations to original values
+                Object.keys(this.models).forEach(type => {
+                    const model = this.models[type];
+                    if (model) {
+                        const originalState = this.originalStates.get(type);
+                        if (originalState && originalState.rotation) {
+                            model.rotation.copy(originalState.rotation);
+                        } else {
+                            // If no original state, reset to zero
+                            model.rotation.set(0, 0, 0);
+                        }
+                        
+                        // Save state on model rotation changes
+                        if (this.stateManager) {
+                            this.stateManager.saveModelState(type, model.position, model.rotation);
+                        }
+                    }
+                });
+                
+                // Reset camera position to (0, 5, 8)
+                this.camera.position.set(0, 5, 8);
+                
+                // Reset camera target to (0, 0, 0)
+                this.camera.lookAt(0, 0, 0);
+                
+                // Update OrbitControls if active
+                if (this.controls) {
+                    this.controls.target.set(0, 0, 0);
+                    this.controls.update();
+                }
+                
+                // Save state on camera changes
+                if (this.stateManager) {
+                    this.stateManager.saveCameraState(
+                        this.camera.position,
+                        { x: 0, y: 0, z: 0 }
+                    );
+                }
+                
+                // Render scene immediately
+                this.render();
+                
+                // Update status
+                this.updateStatus('✅ 视图已重置');
+            }
+
+            // Expand models - move core to Z=-1, cavity to Z=1, part to Z=0
+            expandModels() {
+                // Move core model to Z position -1
+                if (this.models.core) {
+                    this.models.core.position.z = -1;
+                    // Save state on model position changes
+                    if (this.stateManager) {
+                        this.stateManager.saveModelState(
+                            'core',
+                            this.models.core.position,
+                            this.models.core.rotation
+                        );
+                    }
+                }
+                
+                // Move cavity model to Z position 1
+                if (this.models.cavity) {
+                    this.models.cavity.position.z = 1;
+                    // Save state on model position changes
+                    if (this.stateManager) {
+                        this.stateManager.saveModelState(
+                            'cavity',
+                            this.models.cavity.position,
+                            this.models.cavity.rotation
+                        );
+                    }
+                }
+                
+                // Keep part model at Z position 0
+                if (this.models.part) {
+                    this.models.part.position.z = 0;
+                    // Save state on model position changes
+                    if (this.stateManager) {
+                        this.stateManager.saveModelState(
+                            'part',
+                            this.models.part.position,
+                            this.models.part.rotation
+                        );
+                    }
+                }
+                
+                // Render scene immediately
+                this.render();
+                
+                // Update status
+                this.updateStatus('✅ 模型已展开');
+            }
+
+            // Reset model positions - restore all models to original positions and rotations
+            resetPositions() {
+                // Restore all models to original positions
+                Object.keys(this.models).forEach(type => {
+                    const model = this.models[type];
+                    if (model) {
+                        const originalState = this.originalStates.get(type);
+                        if (originalState) {
+                            // Restore original position
+                            if (originalState.position) {
+                                model.position.copy(originalState.position);
+                            } else {
+                                // If no original position, reset to origin
+                                model.position.set(0, 0, 0);
+                            }
+                            
+                            // Restore original rotation
+                            if (originalState.rotation) {
+                                model.rotation.copy(originalState.rotation);
+                            } else {
+                                // If no original rotation, reset to zero
+                                model.rotation.set(0, 0, 0);
+                            }
+                            
+                            // Save state on model position/rotation changes
+                            if (this.stateManager) {
+                                this.stateManager.saveModelState(type, model.position, model.rotation);
+                            }
+                        }
+                    }
+                });
+                
+                // Reset camera position to (0, 5, 8)
+                this.camera.position.set(0, 5, 8);
+                
+                // Reset camera target to (0, 0, 0)
+                this.camera.lookAt(0, 0, 0);
+                
+                // Update OrbitControls
+                if (this.controls) {
+                    this.controls.target.set(0, 0, 0);
+                    this.controls.update();
+                }
+                
+                // Save state on camera changes
+                if (this.stateManager) {
+                    this.stateManager.saveCameraState(
+                        this.camera.position,
+                        { x: 0, y: 0, z: 0 }
+                    );
+                }
+                
+                // Render scene immediately
+                this.render();
+                
+                // Update status
+                this.updateStatus('✅ 模型位置已重置');
+            }
+
+            // Toggle coordinate system visibility
+            toggleCoordinateSystem() {
+                // Toggle visibility of coordinate system indicator
+                this.coordinateSystemVisible = !this.coordinateSystemVisible;
+                
+                // Update HTML element visibility (like mold_test.html)
+                const coordinateSystemElement = document.getElementById('coordinate-system');
+                if (coordinateSystemElement) {
+                    coordinateSystemElement.style.display = this.coordinateSystemVisible ? 'block' : 'none';
+                    
+                    if (this.coordinateSystemVisible) {
+                        this.updateStatus('📐 坐标系已显示');
+                    } else {
+                        this.updateStatus('📐 坐标系已隐藏');
+                    }
+                }
+                
+                // Update aria-pressed state for toggle button
+                const toggleAxesBtn = document.getElementById('toggle-axes');
+                if (toggleAxesBtn) {
+                    toggleAxesBtn.setAttribute('aria-pressed', this.coordinateSystemVisible ? 'true' : 'false');
+                }
+                
+                // Save state on coordinate system visibility changes
+                if (this.stateManager) {
+                    this.stateManager.updateVisibility('coordinateSystem', this.coordinateSystemVisible);
+                }
+            }
+
+            // Toggle background color between light and dark
+            toggleBackground() {
+                // Check current background color
+                const currentColor = this.scene.background.getHex();
+                const isLight = currentColor === 0xf5f7fa;
+                
+                // Toggle between 0xf5f7fa (light) and 0x222831 (dark)
+                this.scene.background.set(isLight ? 0x222831 : 0xf5f7fa);
+                
+                // Update status message
+                this.updateStatus(`🎨 背景色已切换为${isLight ? '深色' : '浅色'}`);
+                
+                // Save state on background changes
+                if (this.stateManager) {
+                    this.stateManager.state.background = isLight ? 'dark' : 'light';
+                    this.stateManager.saveState();
+                }
+                
+                // Render scene immediately
+                this.render();
+            }
+
+            // Animation loop - continuously update and render the scene
+            animate() {
+                try {
+                    // Use requestAnimationFrame for continuous loop
+                    requestAnimationFrame(() => this.animate());
+                    
+                    // Check activeRotations state each frame and apply rotations
+                    if (this.activeRotations.x || this.activeRotations.y || this.activeRotations.z) {
+                        // Apply rotation only to visible models
+                        Object.keys(this.models).forEach(type => {
+                            const model = this.models[type];
+                            if (model && model.visible) {
+                                // Increment rotation.x by 0.005 if X rotation active
+                                if (this.activeRotations.x) {
+                                    model.rotation.x += 0.005;
+                                }
+                                // Increment rotation.y by 0.005 if Y rotation active
+                                if (this.activeRotations.y) {
+                                    model.rotation.y += 0.005;
+                                }
+                                // Increment rotation.z by 0.005 if Z rotation active
+                                if (this.activeRotations.z) {
+                                    model.rotation.z += 0.005;
+                                }
+                            }
+                        });
+                    }
+                    
+                    // Update OrbitControls if in free rotation mode
+                    if (this.controls && this.operationMode === 'freeRotation') {
+                        this.controls.update();
+                    }
+                    
+                    // Render scene
+                    this.render();
+                } catch (error) {
+                    console.error('Animation loop error:', error);
+                    this.updateStatus('❌ 渲染错误，请刷新页面');
+                    // Stop animation loop on critical error by not calling requestAnimationFrame again
+                }
+            }
+
+            // Render the scene
+            render() {
+                if (this.renderer && this.scene && this.camera) {
+                    this.renderer.render(this.scene, this.camera);
+                }
+            }
+
+            // Handle window resize - update camera and renderer
+            onWindowResize() {
+                // Get new preview area dimensions
+                const previewArea = this.canvas.parentElement;
+                const width = previewArea.clientWidth;
+                const height = previewArea.clientHeight;
+                
+                // Update camera aspect ratio
+                this.camera.aspect = width / height;
+                
+                // Update camera projection matrix
+                this.camera.updateProjectionMatrix();
+                
+                // Update renderer size
+                this.renderer.setSize(width, height);
+                
+                // Render scene immediately
+                this.render();
+            }
+        }
+
+        // Global viewer instance and state manager
+        let virtualModeViewer = null;
+        let virtualModeState = null;
+
+        // Initialize Virtual Mode
+        function initializeVirtualMode() {
+            // Create state manager if it doesn't exist
+            if (!virtualModeState) {
+                virtualModeState = new VirtualModeState();
+            }
+
+            // Only initialize viewer once
+            if (virtualModeViewer) {
+                // Check if mold type has changed
+                const moldTypeSelect = document.getElementById('mold-type-select');
+                const selectedMoldType = moldTypeSelect ? moldTypeSelect.value : 'b_type';
+                
+                if (virtualModeViewer.moldType !== selectedMoldType) {
+                    console.log(`🔄 Mold type changed from ${virtualModeViewer.moldType} to ${selectedMoldType}, reloading models...`);
+                    
+                    // Clear existing models
+                    if (virtualModeViewer.models.core) {
+                        virtualModeViewer.scene.remove(virtualModeViewer.models.core);
+                    }
+                    if (virtualModeViewer.models.cavity) {
+                        virtualModeViewer.scene.remove(virtualModeViewer.models.cavity);
+                    }
+                    if (virtualModeViewer.models.part) {
+                        virtualModeViewer.scene.remove(virtualModeViewer.models.part);
+                    }
+                    
+                    // Reset models
+                    virtualModeViewer.models = {
+                        core: null,
+                        cavity: null,
+                        part: null
+                    };
+                    virtualModeViewer.originalStates.clear();
+                    
+                    // Set new mold type
+                    virtualModeViewer.setMoldType(selectedMoldType);
+                    
+                    // Reload models
+                    virtualModeViewer.loadInitialModels();
+                } else {
+                    // Load state when returning to Virtual Mode with same mold type
+                    loadVirtualModeState();
+                }
+                return;
+            }
+
+            // Display "初始化中..." during initialization
+            const statusIndicator = document.getElementById('virtual-status-indicator');
+            if (statusIndicator) {
+                statusIndicator.textContent = '⏳ 初始化中...';
+                statusIndicator.className = 'text-xs text-gray-700 bg-blue-50 border border-blue-200 rounded p-2 text-center';
+            }
+
+            // Check Three.js availability
+            const threeJsCheck = checkThreeJsAvailability();
+            if (!threeJsCheck || (typeof threeJsCheck === 'object' && !threeJsCheck.available)) {
+                // Three.js not available - cannot proceed
+                console.error('Cannot initialize Virtual Mode: Three.js not available');
+                
+                // Provide actionable error message
+                if (statusIndicator) {
+                    statusIndicator.innerHTML = '❌ 无法初始化虚拟模式<br><small>Three.js 库未加载，请检查网络连接</small>';
+                    statusIndicator.className = 'text-xs text-white bg-red-500 border border-red-600 rounded p-2 text-center';
+                }
+                
+                // Disable Virtual Mode and return to welcome after delay
+                setTimeout(() => {
+                    showSection('welcome');
+                }, 3000);
+                return;
+            }
+
+            // Check WebGL support
+            if (!checkWebGLSupport()) {
+                // WebGL not supported - cannot proceed
+                console.error('Cannot initialize Virtual Mode: WebGL not supported');
+                
+                // Provide actionable error message
+                if (statusIndicator) {
+                    statusIndicator.innerHTML = '❌ 无法初始化虚拟模式<br><small>您的浏览器不支持 WebGL，请使用现代浏览器</small>';
+                    statusIndicator.className = 'text-xs text-white bg-red-500 border border-red-600 rounded p-2 text-center';
+                }
+                
+                // Disable Virtual Mode and return to welcome after delay
+                setTimeout(() => {
+                    showSection('welcome');
+                }, 3000);
+                return;
+            }
+
+            try {
+                // Get selected mold type from dropdown
+                const moldTypeSelect = document.getElementById('mold-type-select');
+                const selectedMoldType = moldTypeSelect ? moldTypeSelect.value : 'b_type';
+                console.log(`🔧 Selected mold type: ${selectedMoldType}`);
+                
+                // Create viewer instance with state manager
+                virtualModeViewer = new VirtualModeViewer('virtual-canvas', virtualModeState);
+                
+                // Set mold type before loading models
+                virtualModeViewer.setMoldType(selectedMoldType);
+                
+                // Initialize scene
+                virtualModeViewer.init();
+                
+                // Load initial models
+                virtualModeViewer.loadInitialModels();
+                
+                // Set up checkbox event listeners
+                setupCheckboxListeners();
+                
+                // Set up rotation button event listeners
+                setupRotationButtonListeners();
+                
+                // Set up mouse event listeners for dragging
+                setupMouseEventListeners();
+                
+                // Set up keyboard navigation for all buttons
+                setupKeyboardNavigation();
+                
+                // Display "✅ 初始化完成" on completion
+                let statusMessage = '✅ 初始化完成';
+                
+                // Add warning if OrbitControls is not available
+                if (typeof threeJsCheck === 'object' && !threeJsCheck.orbitControlsAvailable) {
+                    statusMessage = '✅ 初始化完成<br><small>⚠️ 自由转动功能不可用</small>';
+                }
+                
+                if (statusIndicator) {
+                    statusIndicator.innerHTML = statusMessage;
+                    statusIndicator.className = 'text-xs text-gray-700 bg-blue-50 border border-blue-200 rounded p-2 text-center';
+                }
+                
+                // Initial render
+                virtualModeViewer.render();
+                
+                // Start animation loop
+                virtualModeViewer.animate();
+            } catch (error) {
+                console.error('Error initializing Virtual Mode:', error);
+                
+                // Provide actionable error message based on error type
+                let errorMessage = '❌ 初始化失败<br><small>请刷新页面重试</small>';
+                
+                if (error.message.includes('Canvas')) {
+                    errorMessage = '❌ Canvas 初始化失败<br><small>请刷新页面或检查浏览器兼容性</small>';
+                } else if (error.message.includes('渲染器')) {
+                    errorMessage = '❌ 3D 渲染器初始化失败<br><small>请更新显卡驱动或启用硬件加速</small>';
+                } else if (error.message.includes('Scene')) {
+                    errorMessage = '❌ 场景初始化失败<br><small>请刷新页面重试</small>';
+                }
+                
+                if (statusIndicator) {
+                    statusIndicator.innerHTML = errorMessage;
+                    statusIndicator.className = 'text-xs text-white bg-red-500 border border-red-600 rounded p-2 text-center';
+                }
+                
+                // Disable Virtual Mode on critical errors by navigating back to welcome page
+                // Give user time to see the error message before navigating
+                setTimeout(() => {
+                    showSection('welcome');
+                }, 3000);
+            }
+        }
+
+        // Load state when returning to Virtual Mode
+        function loadVirtualModeState() {
+            if (!virtualModeState || !virtualModeViewer) {
+                return;
+            }
+            
+            // Load state from sessionStorage
+            const stateLoaded = virtualModeState.loadState();
+            
+            if (!stateLoaded) {
+                return;
+            }
+            
+            const state = virtualModeState.state;
+            
+            // Restore model visibility
+            Object.keys(state.visibility).forEach(type => {
+                if (type === 'coordinateSystem') {
+                    // Restore coordinate system visibility
+                    virtualModeViewer.coordinateSystemVisible = state.visibility.coordinateSystem;
+                    const coordinateSystemElement = document.getElementById('coordinate-system');
+                    if (coordinateSystemElement) {
+                        coordinateSystemElement.style.display = state.visibility.coordinateSystem ? 'block' : 'none';
+                    }
+                } else if (virtualModeViewer.models[type]) {
+                    // Restore model visibility
+                    virtualModeViewer.models[type].visible = state.visibility[type];
+                    
+                    // Update checkbox state
+                    const checkbox = document.getElementById(`show-${type}`);
+                    if (checkbox) {
+                        checkbox.checked = state.visibility[type];
+                    }
+                }
+            });
+            
+            // Restore model positions and rotations
+            Object.keys(state.positions).forEach(type => {
+                if (virtualModeViewer.models[type]) {
+                    const position = state.positions[type];
+                    const rotation = state.rotations[type];
+                    
+                    if (position) {
+                        virtualModeViewer.models[type].position.set(position.x, position.y, position.z);
+                    }
+                    
+                    if (rotation) {
+                        virtualModeViewer.models[type].rotation.set(rotation.x, rotation.y, rotation.z);
+                    }
+                }
+            });
+            
+            // Restore camera position and target
+            if (state.camera) {
+                if (state.camera.position) {
+                    virtualModeViewer.camera.position.set(
+                        state.camera.position.x,
+                        state.camera.position.y,
+                        state.camera.position.z
+                    );
+                }
+                
+                if (state.camera.target) {
+                    virtualModeViewer.camera.lookAt(
+                        state.camera.target.x,
+                        state.camera.target.y,
+                        state.camera.target.z
+                    );
+                    
+                    if (virtualModeViewer.controls) {
+                        virtualModeViewer.controls.target.set(
+                            state.camera.target.x,
+                            state.camera.target.y,
+                            state.camera.target.z
+                        );
+                        virtualModeViewer.controls.update();
+                    }
+                }
+            }
+            
+            // Restore background color
+            if (state.background) {
+                const backgroundColor = state.background === 'light' ? 0xf5f7fa : 0x222831;
+                virtualModeViewer.scene.background.set(backgroundColor);
+            }
+            
+            // Render scene with restored state
+            virtualModeViewer.render();
+            
+            virtualModeViewer.updateStatus('✅ 状态已恢复');
+        }
+
+        // Set up checkbox event listeners
+        function setupCheckboxListeners() {
+            const checkboxes = [
+                { id: 'show-core', type: 'core' },
+                { id: 'show-cavity', type: 'cavity' },
+                { id: 'show-part', type: 'part' }
+            ];
+
+            checkboxes.forEach(({ id, type }) => {
+                const checkbox = document.getElementById(id);
+                if (checkbox) {
+                    checkbox.addEventListener('change', (event) => {
+                        if (virtualModeViewer) {
+                            if (event.target.checked) {
+                                virtualModeViewer.showModel(type);
+                            } else {
+                                virtualModeViewer.hideModel(type);
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Set up bulk selection buttons
+            const selectAllBtn = document.getElementById('select-all-parts');
+            const deselectAllBtn = document.getElementById('deselect-all-parts');
+
+            if (selectAllBtn) {
+                selectAllBtn.addEventListener('click', () => {
+                    if (virtualModeViewer) {
+                        // Check all checkboxes
+                        checkboxes.forEach(({ id, type }) => {
+                            const checkbox = document.getElementById(id);
+                            if (checkbox && !checkbox.checked) {
+                                checkbox.checked = true;
+                                virtualModeViewer.showModel(type);
+                            }
+                        });
+                        // Update status
+                        virtualModeViewer.updateStatus('✅ 已全选所有零件');
+                    }
+                });
+            }
+
+            if (deselectAllBtn) {
+                deselectAllBtn.addEventListener('click', () => {
+                    if (virtualModeViewer) {
+                        // Uncheck all checkboxes
+                        checkboxes.forEach(({ id, type }) => {
+                            const checkbox = document.getElementById(id);
+                            if (checkbox && checkbox.checked) {
+                                checkbox.checked = false;
+                                virtualModeViewer.hideModel(type);
+                            }
+                        });
+                        // Update status
+                        virtualModeViewer.updateStatus('✅ 已取消全选所有零件');
+                    }
+                });
+            }
+        }
+
+        // Set up rotation button event listeners
+        function setupRotationButtonListeners() {
+            // Axis rotation buttons
+            const rotateXBtn = document.getElementById('rotate-x');
+            const rotateYBtn = document.getElementById('rotate-y');
+            const rotateZBtn = document.getElementById('rotate-z');
+
+            if (rotateXBtn) {
+                rotateXBtn.addEventListener('click', () => {
+                    if (virtualModeViewer) {
+                        virtualModeViewer.toggleAxisRotation('x');
+                    }
+                });
+            }
+
+            if (rotateYBtn) {
+                rotateYBtn.addEventListener('click', () => {
+                    if (virtualModeViewer) {
+                        virtualModeViewer.toggleAxisRotation('y');
+                    }
+                });
+            }
+
+            if (rotateZBtn) {
+                rotateZBtn.addEventListener('click', () => {
+                    if (virtualModeViewer) {
+                        virtualModeViewer.toggleAxisRotation('z');
+                    }
+                });
+            }
+
+            // Reset view button
+            const resetViewBtn = document.getElementById('reset-view');
+            if (resetViewBtn) {
+                resetViewBtn.addEventListener('click', () => {
+                    if (virtualModeViewer) {
+                        virtualModeViewer.resetView();
+                    }
+                });
+            }
+
+            // Enable drag mode button
+            const enableDragBtn = document.getElementById('enable-drag');
+            if (enableDragBtn) {
+                enableDragBtn.addEventListener('click', () => {
+                    if (virtualModeViewer) {
+                        virtualModeViewer.enableDragMode();
+                    }
+                });
+            }
+
+            // Free rotation mode button
+            const freeRotationBtn = document.getElementById('free-rotation');
+            if (freeRotationBtn) {
+                freeRotationBtn.addEventListener('click', () => {
+                    if (virtualModeViewer) {
+                        virtualModeViewer.enableFreeRotation();
+                    }
+                });
+            }
+
+            // Disable all modes button
+            const disableOpsBtn = document.getElementById('disable-ops');
+            if (disableOpsBtn) {
+                disableOpsBtn.addEventListener('click', () => {
+                    if (virtualModeViewer) {
+                        virtualModeViewer.disableAllModes();
+                        virtualModeViewer.updateStatus('✅ 所有操作模式已关闭');
+                    }
+                });
+            }
+
+            // Expand models button
+            const expandModelsBtn = document.getElementById('expand-models');
+            if (expandModelsBtn) {
+                expandModelsBtn.addEventListener('click', () => {
+                    if (virtualModeViewer) {
+                        virtualModeViewer.expandModels();
+                    }
+                });
+            }
+
+            // Reset positions button
+            const resetPositionsBtn = document.getElementById('reset-positions');
+            if (resetPositionsBtn) {
+                resetPositionsBtn.addEventListener('click', () => {
+                    if (virtualModeViewer) {
+                        virtualModeViewer.resetPositions();
+                    }
+                });
+            }
+
+            // Toggle coordinate system button
+            const toggleAxesBtn = document.getElementById('toggle-axes');
+            if (toggleAxesBtn) {
+                toggleAxesBtn.addEventListener('click', () => {
+                    if (virtualModeViewer) {
+                        virtualModeViewer.toggleCoordinateSystem();
+                    }
+                });
+            }
+
+            // Toggle background button
+            const toggleBackgroundBtn = document.getElementById('toggle-background');
+            if (toggleBackgroundBtn) {
+                toggleBackgroundBtn.addEventListener('click', () => {
+                    if (virtualModeViewer) {
+                        virtualModeViewer.toggleBackground();
+                    }
+                });
+            }
+        }
+
+        // Set up mouse event listeners for dragging
+        function setupMouseEventListeners() {
+            const canvas = document.getElementById('virtual-canvas');
+            if (!canvas) {
+                return;
+            }
+
+            // Add mousedown event listener
+            canvas.addEventListener('mousedown', (event) => {
+                if (virtualModeViewer) {
+                    virtualModeViewer.onMouseDown(event);
+                }
+            });
+
+            // Add mousemove event listener
+            canvas.addEventListener('mousemove', (event) => {
+                if (virtualModeViewer) {
+                    virtualModeViewer.onMouseMove(event);
+                }
+            });
+
+            // Add mouseup event listener
+            canvas.addEventListener('mouseup', (event) => {
+                if (virtualModeViewer) {
+                    virtualModeViewer.onMouseUp(event);
+                }
+            });
+
+            // Also handle mouseup on document to catch releases outside canvas
+            document.addEventListener('mouseup', (event) => {
+                if (virtualModeViewer) {
+                    virtualModeViewer.onMouseUp(event);
+                }
+            });
+
+            // Add window resize event listener
+            window.addEventListener('resize', () => {
+                if (virtualModeViewer) {
+                    virtualModeViewer.onWindowResize();
+                }
+            });
+        }
+
+        // Set up keyboard navigation for Virtual Mode buttons
+        function setupKeyboardNavigation() {
+            // Helper function to add keyboard support to a button
+            function addKeyboardSupport(buttonId) {
+                const button = document.getElementById(buttonId);
+                if (button) {
+                    // Ensure button is keyboard accessible (should already be with proper HTML)
+                    if (!button.hasAttribute('tabindex')) {
+                        button.setAttribute('tabindex', '0');
+                    }
+                    
+                    // Add keyboard event listener for Enter and Space keys
+                    button.addEventListener('keydown', (event) => {
+                        // Check if Enter (13) or Space (32) key was pressed
+                        if (event.key === 'Enter' || event.key === ' ' || event.keyCode === 13 || event.keyCode === 32) {
+                            event.preventDefault(); // Prevent default space scrolling
+                            button.click(); // Trigger the button's click event
+                        }
+                    });
+                }
+            }
+
+            // Add keyboard support to all Virtual Mode control panel buttons
+            const virtualModeButtons = [
+                'select-all-parts',
+                'deselect-all-parts',
+                'reset-view',
+                'enable-drag',
+                'free-rotation',
+                'disable-ops',
+                'rotate-x',
+                'rotate-y',
+                'rotate-z',
+                'expand-models',
+                'reset-positions',
+                'toggle-axes',
+                'toggle-background'
+            ];
+
+            virtualModeButtons.forEach(buttonId => {
+                addKeyboardSupport(buttonId);
+            });
+
+            // Add keyboard support to Welcome page Virtual Mode button
+            addKeyboardSupport('btn-start-virtual');
+
+            // Add keyboard support to return button
+            addKeyboardSupport('btn-return-from-virtual');
+
+            // Add keyboard support to checkboxes (they should already be keyboard accessible)
+            const checkboxes = ['show-core', 'show-cavity', 'show-part'];
+            checkboxes.forEach(checkboxId => {
+                const checkbox = document.getElementById(checkboxId);
+                if (checkbox) {
+                    // Ensure checkbox is keyboard accessible
+                    if (!checkbox.hasAttribute('tabindex')) {
+                        checkbox.setAttribute('tabindex', '0');
+                    }
+                    
+                    // Add keyboard event listener for Space key (Enter already works for checkboxes)
+                    checkbox.addEventListener('keydown', (event) => {
+                        if (event.key === ' ' || event.keyCode === 32) {
+                            event.preventDefault();
+                            checkbox.checked = !checkbox.checked;
+                            // Trigger change event
+                            checkbox.dispatchEvent(new Event('change'));
+                        }
+                    });
+                }
+            });
         }
 
         // 初始化应用
