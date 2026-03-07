@@ -160,16 +160,18 @@
                 <p class="text-sm text-gray-500">开启属于你的智能学习之旅</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl">
-                <div class="bg-white rounded-xl shadow-lg p-8 card-shadow">
-                    <div class="flex items-center justify-center mb-6">
-                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                            <i class="fa fa-graduation-cap text-primary text-3xl"></i>
+                <div class="bg-white rounded-xl shadow-lg p-8 card-shadow flex flex-col">
+                    <div class="flex-grow">
+                        <div class="flex items-center justify-center mb-6">
+                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fa fa-graduation-cap text-primary text-3xl"></i>
+                            </div>
                         </div>
+                        <h3 class="text-2xl font-bold text-center text-gray-800 mb-4">学习模式</h3>
+                        <p class="text-gray-600 text-center mb-6">
+                            按序号顺序浏览题目，选择答案后立即显示正确答案和详细解析，帮助您深入理解知识点。
+                        </p>
                     </div>
-                    <h3 class="text-2xl font-bold text-center text-gray-800 mb-4">学习模式</h3>
-                    <p class="text-gray-600 text-center mb-6">
-                        按序号顺序浏览题目，选择答案后立即查看正确答案和详细解析，帮助您深入理解知识点。
-                    </p>
 
                     <div class="mb-4 text-left w-full">
                         <label for="learn-unit-select"
@@ -183,16 +185,18 @@
                         开始学习
                     </button>
                 </div>
-                <div class="bg-white rounded-xl shadow-lg p-8 card-shadow">
-                    <div class="flex items-center justify-center mb-6">
-                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                            <i class="fa fa-trophy text-primary text-3xl"></i>
+                <div class="bg-white rounded-xl shadow-lg p-8 card-shadow flex flex-col">
+                    <div class="flex-grow">
+                        <div class="flex items-center justify-center mb-6">
+                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fa fa-trophy text-primary text-3xl"></i>
+                            </div>
                         </div>
+                        <h3 class="text-2xl font-bold text-center text-gray-800 mb-4">测验模式</h3>
+                        <p class="text-gray-600 text-center mb-6">
+                            题目随机排序，完成所有题目后计算得分，检验您的学习成果和知识掌握程度。
+                        </p>
                     </div>
-                    <h3 class="text-2xl font-bold text-center text-gray-800 mb-4">测验模式</h3>
-                    <p class="text-gray-600 text-center mb-6">
-                        20道题目随机排序，完成所有题目后计算得分，检验您的学习成果和知识掌握程度。
-                    </p>
                     <div class="mb-4 text-left w-full">
                         <label for="test-unit-select"
                             class="block text-sm font-medium text-gray-700 mb-2">选择测验单元</label>
@@ -206,33 +210,32 @@
                     </button>
                 </div>
                 <!-- Virtual Mode Card -->
-                <div class="bg-white rounded-xl shadow-lg p-8 card-shadow">
-                    <div class="flex items-center justify-center mb-6">
-                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
-                            <i class="fa fa-cube text-purple-600 text-3xl"></i>
+                <div class="bg-white rounded-xl shadow-lg p-8 card-shadow flex flex-col">
+                    <div class="flex-grow">
+                        <div class="flex items-center justify-center mb-6">
+                            <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
+                                <i class="fa fa-cube text-purple-600 text-3xl"></i>
+                            </div>
                         </div>
+                        <h3 class="text-2xl font-bold text-center text-gray-800 mb-2">虚拟模式</h3>
+                        <p class="text-gray-600 text-center mb-6">
+                            选择模具后，通过拖动和按钮，实现装、拆和360度观察零部件等功能，学习和掌握虚拟装配模具的结构、装配关系、零部件形状特征和名称。
+                        </p>
                     </div>
-                    <h3 class="text-2xl font-bold text-center text-gray-800 mb-2">虚拟模式</h3>
-                    <p class="text-sm text-center text-purple-600 font-medium mb-4">探索、互动、实践</p>
-                    <p class="text-gray-600 text-center mb-6">
-                        选择模具后，通过拖动和按钮，实现装、拆和360度观察零部件等功能，学习和掌握虚拟装配模具的结构、装配关系、零部件形状特征和名称。
-                    </p>
 
                     <div class="mb-4 text-left w-full">
                         <label for="mold-type-select"
                             class="block text-sm font-medium text-gray-700 mb-2">选择模具</label>
                         <select id="mold-type-select"
                             class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md border">
-                            <option value="b_type">B型模具</option>
-                            <option value="m_type">M型模具</option>
+                            <option value="b_type">按钮模具</option>
+                            <option value="m_type">名片盒模具</option>
                         </select>
                     </div>
 
-                    <div>
-                        <button id="btn-start-virtual" class="btn-primary w-full" aria-label="进入虚拟模式开始3D模具模拟">
-                            开始模拟
-                        </button>
-                    </div>
+                    <button id="btn-start-virtual" class="btn-primary w-full" aria-label="进入虚拟模式开始3D模具模拟">
+                        开始模拟
+                    </button>
                 </div>
             </div>
         </section>
@@ -1389,7 +1392,7 @@
                     </div>
                     
                     <div class="text-sm text-red-500">
-                        提示：导入将覆盖现有20道题目，建议先备份重要内容！
+                        提示：导入将覆盖现有题目，建议先备份重要内容！
                     </div>
                 </div>
             `;
@@ -2218,10 +2221,6 @@
                     const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
                     directionalLight2.position.set(-5, -10, -7.5);
                     this.scene.add(directionalLight2);
-                    
-                    // Add GridHelper to scene for spatial reference
-                    const gridHelper = new THREE.GridHelper(10, 10);
-                    this.scene.add(gridHelper);
                     
                     // Initialize OrbitControls if available
                     if (typeof THREE.OrbitControls !== 'undefined') {
