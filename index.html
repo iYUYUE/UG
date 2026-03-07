@@ -2727,17 +2727,31 @@
                 // Update raycaster
                 this.raycaster.setFromCamera(this.mouse, this.camera);
                 
-                // Create a plane at the object's current Z position for dragging
-                const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -this.selectedObject.position.z);
+                // Get the world position of the selected object
+                const worldPos = new THREE.Vector3();
+                this.selectedObject.getWorldPosition(worldPos);
+                
+                // Create a plane perpendicular to camera at the object's world Z position
+                const cameraDirection = new THREE.Vector3();
+                this.camera.getWorldDirection(cameraDirection);
+                const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
+                    cameraDirection,
+                    worldPos
+                );
+                
                 const intersection = new THREE.Vector3();
                 
                 // Calculate intersection point with the plane
                 this.raycaster.ray.intersectPlane(plane, intersection);
                 
                 if (intersection) {
-                    // Update the selected object's position
-                    this.selectedObject.position.x = intersection.x;
-                    this.selectedObject.position.y = intersection.y;
+                    // Convert world position to local position relative to parent
+                    if (this.selectedObject.parent) {
+                        const localPos = this.selectedObject.parent.worldToLocal(intersection.clone());
+                        this.selectedObject.position.copy(localPos);
+                    } else {
+                        this.selectedObject.position.copy(intersection);
+                    }
                 }
             }
             
