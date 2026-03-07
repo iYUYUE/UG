@@ -371,19 +371,8 @@
                         <!-- 零件列表 -->
                         <div role="group" aria-labelledby="parts-list-heading">
                             <h4 id="parts-list-heading" class="text-lg font-bold text-gray-800 mb-3 border-b pb-2">零件列表</h4>
-                            <div class="space-y-2">
-                                <label class="flex items-center space-x-2 cursor-pointer">
-                                    <input type="checkbox" id="show-core" class="w-4 h-4 text-primary rounded focus:ring-primary" checked aria-label="显示型芯模型">
-                                    <span class="text-sm text-gray-700">型芯</span>
-                                </label>
-                                <label class="flex items-center space-x-2 cursor-pointer">
-                                    <input type="checkbox" id="show-cavity" class="w-4 h-4 text-primary rounded focus:ring-primary" aria-label="显示型腔模型">
-                                    <span class="text-sm text-gray-700">型腔</span>
-                                </label>
-                                <label class="flex items-center space-x-2 cursor-pointer">
-                                    <input type="checkbox" id="show-part" class="w-4 h-4 text-primary rounded focus:ring-primary" aria-label="显示产品模型">
-                                    <span class="text-sm text-gray-700">产品</span>
-                                </label>
+                            <div id="parts-list-container" class="space-y-2">
+                                <!-- Parts will be dynamically populated based on mold type -->
                             </div>
                             <div class="flex gap-2 mt-3">
                                 <button id="select-all-parts" class="flex-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded transition-colors" aria-label="选择所有零件">
@@ -1797,47 +1786,94 @@
                 // Create loadedModels Map to store loaded models
                 this.loadedModels = new Map();
                 
+                // Component name mappings (English to Chinese)
+                this.componentNames = {
+                    b_type: {
+                        'a_plate': '定模板',
+                        'b_plate': '动模板',
+                        'base1': '定模座板、支承柱、垫块',
+                        'base2': '推出机构',
+                        'cavity': '型腔',
+                        'connector': '水管接头',
+                        'core': '型芯',
+                        'locating_ring': '定位圈',
+                        'spring': '弹簧',
+                        'sprue_bush': '浇口套',
+                        'stop': '限位块',
+                        't_plate': '定模座板',
+                        'u_plate': '支承板'
+                    },
+                    m_type: {
+                        'a_plate': '定模板',
+                        'a_screw': '定模螺钉',
+                        'b_plate': '动模板',
+                        'b_screw': '动模螺钉',
+                        'base': '动模座板、垫块',
+                        'cavity': '型腔',
+                        'connector': '水管接头',
+                        'core': '型芯',
+                        'o_ring': 'O形圈',
+                        'push': '推出机构',
+                        'ring': '定位圈',
+                        'spring': '弹簧',
+                        'sprue': '浇口套',
+                        'stop': '限位块',
+                        't_plate': '定模座板'
+                    }
+                };
+                
                 // Define model path mappings for b_type and m_type
                 this.modelPaths = {
                     b_type: {
-                        core: [
-                            'b_3D_glb/core.glb',
-                            'b_3D_glb/a_plate.glb',
-                            'b_3D_glb/b_plate.glb',
-                            'b_3D_glb/base1.glb',
-                            'b_3D_glb/base2.glb',
-                            'b_3D_glb/connector.glb',
-                            'b_3D_glb/locating_ring.glb',
-                            'b_3D_glb/spring.glb',
-                            'b_3D_glb/sprue_bush.glb',
-                            'b_3D_glb/stop.glb',
-                            'b_3D_glb/t_plate.glb',
-                            'b_3D_glb/u_plate.glb'
-                        ],
-                        cavity: ['b_3D_glb/cavity.glb'],
-                        part: [] // No part model specified for b_type yet
+                        components: [
+                            { file: 'b_3D_glb/a_plate.glb', name: 'a_plate' },
+                            { file: 'b_3D_glb/b_plate.glb', name: 'b_plate' },
+                            { file: 'b_3D_glb/base1.glb', name: 'base1' },
+                            { file: 'b_3D_glb/base2.glb', name: 'base2' },
+                            { file: 'b_3D_glb/cavity.glb', name: 'cavity' },
+                            { file: 'b_3D_glb/connector.glb', name: 'connector' },
+                            { file: 'b_3D_glb/core.glb', name: 'core' },
+                            { file: 'b_3D_glb/locating_ring.glb', name: 'locating_ring' },
+                            { file: 'b_3D_glb/spring.glb', name: 'spring' },
+                            { file: 'b_3D_glb/sprue_bush.glb', name: 'sprue_bush' },
+                            { file: 'b_3D_glb/stop.glb', name: 'stop' },
+                            { file: 'b_3D_glb/t_plate.glb', name: 't_plate' },
+                            { file: 'b_3D_glb/u_plate.glb', name: 'u_plate' }
+                        ]
                     },
                     m_type: {
-                        core: [
-                            'm_3D_glb/core.glb',
-                            'm_3D_glb/a_plate.glb',
-                            'm_3D_glb/a_screw.glb',
-                            'm_3D_glb/b_plate.glb',
-                            'm_3D_glb/b_screw.glb',
-                            'm_3D_glb/base.glb',
-                            'm_3D_glb/connector.glb',
-                            'm_3D_glb/o_ring.glb',
-                            'm_3D_glb/push.glb',
-                            'm_3D_glb/ring.glb',
-                            'm_3D_glb/spring.glb',
-                            'm_3D_glb/sprue.glb',
-                            'm_3D_glb/stop.glb',
-                            'm_3D_glb/t_plate.glb'
-                        ],
-                        cavity: ['m_3D_glb/cavity.glb'],
-                        part: [] // No part model specified for m_type yet
+                        components: [
+                            { file: 'm_3D_glb/a_plate.glb', name: 'a_plate' },
+                            { file: 'm_3D_glb/a_screw.glb', name: 'a_screw' },
+                            { file: 'm_3D_glb/b_plate.glb', name: 'b_plate' },
+                            { file: 'm_3D_glb/b_screw.glb', name: 'b_screw' },
+                            { file: 'm_3D_glb/base.glb', name: 'base' },
+                            { file: 'm_3D_glb/cavity.glb', name: 'cavity' },
+                            { file: 'm_3D_glb/connector.glb', name: 'connector' },
+                            { file: 'm_3D_glb/core.glb', name: 'core' },
+                            { file: 'm_3D_glb/o_ring.glb', name: 'o_ring' },
+                            { file: 'm_3D_glb/push.glb', name: 'push' },
+                            { file: 'm_3D_glb/ring.glb', name: 'ring' },
+                            { file: 'm_3D_glb/spring.glb', name: 'spring' },
+                            { file: 'm_3D_glb/sprue.glb', name: 'sprue' },
+                            { file: 'm_3D_glb/stop.glb', name: 'stop' },
+                            { file: 'm_3D_glb/t_plate.glb', name: 't_plate' }
+                        ]
                     }
                 };
+            }
+            
+            /**
+             * Get component display name (Chinese)
+             * @param {string} moldType - Mold type (b_type or m_type)
+             * @param {string} componentName - Component name (English)
+             * @returns {string} Display name in Chinese
+             */
+            getComponentDisplayName(moldType, componentName) {
+                if (this.componentNames[moldType] && this.componentNames[moldType][componentName]) {
+                    return this.componentNames[moldType][componentName];
+                }
+                return componentName; // Fallback to English name
             }
 
             /**
@@ -2115,12 +2151,11 @@
                 // Model loader instance
                 this.modelLoader = new ModelLoader();
                 
-                // Models object for core, cavity, part
-                this.models = {
-                    core: null,
-                    cavity: null,
-                    part: null
-                };
+                // Components object for individual parts (replaces models)
+                this.components = {};
+                
+                // Assembly group to hold all components
+                this.assemblyGroup = null;
                 
                 // Original states Map for storing initial positions/rotations
                 this.originalStates = new Map();
@@ -2262,195 +2297,76 @@
                 }
             }
 
-            // Load initial models (core model visible by default)
+            // Load initial models (all components visible by default)
             async loadInitialModels() {
                 this.updateStatus('⏳ 加载模型中...');
                 
                 try {
-                    // Load all core components
-                    const corePaths = this.modelLoader.modelPaths[this.moldType].core;
-                    if (corePaths && corePaths.length > 0) {
-                        // Create a group to hold all core components
-                        this.models.core = new THREE.Group();
-                        this.models.core.userData = { type: 'core' };
-                        this.scene.add(this.models.core);
-                        
-                        // Load all core components
-                        for (const path of corePaths) {
-                            try {
-                                const component = await this.modelLoader.loadModelWithFallback(
-                                    'core', 
-                                    path, 
-                                    this.models.core, // Add to core group instead of scene
-                                    this.originalStates
-                                );
-                                console.log(`✅ Loaded core component: ${path}`);
-                            } catch (error) {
-                                console.warn(`⚠️ Failed to load core component: ${path}`, error);
-                            }
-                        }
-                        
-                        // Calculate bounding box and scale
-                        const coreBox = new THREE.Box3().setFromObject(this.models.core);
-                        const coreSize = new THREE.Vector3();
-                        coreBox.getSize(coreSize);
-                        const maxDim = Math.max(coreSize.x, coreSize.y, coreSize.z);
-                        
-                        if (maxDim > 0 && maxDim < 1) {
-                            // Model is too small, scale it up
-                            const scaleFactor = 3 / maxDim; // Scale to approximately 3 units
-                            this.models.core.scale.set(scaleFactor, scaleFactor, scaleFactor);
-                            console.log(`🔍 Core scaled by ${scaleFactor.toFixed(2)}x (original size: ${maxDim.toFixed(4)})`);
-                        }
-                        
-                        // Set visibility
-                        this.models.core.visible = true;
-                        this.models.core.traverse((child) => {
-                            if (child.isMesh) {
-                                child.visible = true;
-                            }
-                        });
-                        
-                        // Store original state
-                        this.originalStates.set('core', {
-                            position: this.models.core.position.clone(),
-                            rotation: this.models.core.rotation.clone(),
-                            scale: this.models.core.scale.clone()
-                        });
-                        
-                        console.log(`✅ Core model loaded with ${corePaths.length} components, visible: ${this.models.core.visible}`);
+                    // Get component list for current mold type
+                    const componentList = this.modelLoader.modelPaths[this.moldType].components;
+                    
+                    if (!componentList || componentList.length === 0) {
+                        throw new Error('No components defined for this mold type');
                     }
                     
-                    // Load cavity model
-                    const cavityPaths = this.modelLoader.modelPaths[this.moldType].cavity;
-                    if (cavityPaths && cavityPaths.length > 0) {
-                        // Create a group to hold all cavity components
-                        this.models.cavity = new THREE.Group();
-                        this.models.cavity.userData = { type: 'cavity' };
-                        this.scene.add(this.models.cavity);
-                        
-                        // Load all cavity components
-                        for (const path of cavityPaths) {
-                            try {
-                                const component = await this.modelLoader.loadModelWithFallback(
-                                    'cavity', 
-                                    path, 
-                                    this.models.cavity,
-                                    this.originalStates
-                                );
-                                console.log(`✅ Loaded cavity component: ${path}`);
-                            } catch (error) {
-                                console.warn(`⚠️ Failed to load cavity component: ${path}`, error);
-                            }
+                    // Create a group to hold all components
+                    this.assemblyGroup = new THREE.Group();
+                    this.assemblyGroup.userData = { type: 'assembly' };
+                    this.scene.add(this.assemblyGroup);
+                    
+                    // Load all components
+                    for (const componentInfo of componentList) {
+                        try {
+                            const component = await this.modelLoader.loadGLB(componentInfo.file);
+                            
+                            // Add component to assembly group
+                            component.userData = { 
+                                componentName: componentInfo.name,
+                                displayName: this.modelLoader.getComponentDisplayName(this.moldType, componentInfo.name)
+                            };
+                            this.assemblyGroup.add(component);
+                            
+                            // Store component reference
+                            this.components[componentInfo.name] = component;
+                            
+                            // Store original state
+                            this.originalStates.set(componentInfo.name, {
+                                position: component.position.clone(),
+                                rotation: component.rotation.clone(),
+                                scale: component.scale.clone()
+                            });
+                            
+                            // Set initial visibility (all visible by default)
+                            component.visible = true;
+                            component.traverse((child) => {
+                                if (child.isMesh) {
+                                    child.visible = true;
+                                }
+                            });
+                            
+                            console.log(`✅ Loaded: ${componentInfo.name} (${component.userData.displayName})`);
+                        } catch (error) {
+                            console.warn(`⚠️ Failed to load: ${componentInfo.file}`, error);
                         }
-                        
-                        // Calculate bounding box and scale
-                        const cavityBox = new THREE.Box3().setFromObject(this.models.cavity);
-                        const cavitySize = new THREE.Vector3();
-                        cavityBox.getSize(cavitySize);
-                        const maxDim = Math.max(cavitySize.x, cavitySize.y, cavitySize.z);
-                        
-                        if (maxDim > 0 && maxDim < 1) {
-                            // Model is too small, scale it up
-                            const scaleFactor = 3 / maxDim;
-                            this.models.cavity.scale.set(scaleFactor, scaleFactor, scaleFactor);
-                            console.log(`🔍 Cavity scaled by ${scaleFactor.toFixed(2)}x (original size: ${maxDim.toFixed(4)})`);
-                        }
-                        
-                        // Set visibility (hidden by default)
-                        this.models.cavity.visible = false;
-                        this.models.cavity.traverse((child) => {
-                            if (child.isMesh) {
-                                child.visible = false;
-                            }
-                        });
-                        
-                        // Store original state
-                        this.originalStates.set('cavity', {
-                            position: this.models.cavity.position.clone(),
-                            rotation: this.models.cavity.rotation.clone(),
-                            scale: this.models.cavity.scale.clone()
-                        });
-                        
-                        console.log(`✅ Cavity model loaded with ${cavityPaths.length} components, visible: ${this.models.cavity.visible}`);
                     }
                     
-                    // Load part model (if available)
-                    const partPaths = this.modelLoader.modelPaths[this.moldType].part;
-                    if (partPaths && partPaths.length > 0) {
-                        // Create a group to hold all part components
-                        this.models.part = new THREE.Group();
-                        this.models.part.userData = { type: 'part' };
-                        this.scene.add(this.models.part);
-                        
-                        // Load all part components
-                        for (const path of partPaths) {
-                            try {
-                                const component = await this.modelLoader.loadModelWithFallback(
-                                    'part', 
-                                    path, 
-                                    this.models.part,
-                                    this.originalStates
-                                );
-                                console.log(`✅ Loaded part component: ${path}`);
-                            } catch (error) {
-                                console.warn(`⚠️ Failed to load part component: ${path}`, error);
-                            }
-                        }
-                        
-                        // Calculate bounding box and scale
-                        const partBox = new THREE.Box3().setFromObject(this.models.part);
-                        const partSize = new THREE.Vector3();
-                        partBox.getSize(partSize);
-                        const maxDim = Math.max(partSize.x, partSize.y, partSize.z);
-                        
-                        if (maxDim > 0 && maxDim < 1) {
-                            // Model is too small, scale it up
-                            const scaleFactor = 3 / maxDim;
-                            this.models.part.scale.set(scaleFactor, scaleFactor, scaleFactor);
-                            console.log(`🔍 Part scaled by ${scaleFactor.toFixed(2)}x (original size: ${maxDim.toFixed(4)})`);
-                        }
-                        
-                        // Set visibility (hidden by default)
-                        this.models.part.visible = false;
-                        this.models.part.traverse((child) => {
-                            if (child.isMesh) {
-                                child.visible = false;
-                            }
-                        });
-                        
-                        // Store original state
-                        this.originalStates.set('part', {
-                            position: this.models.part.position.clone(),
-                            rotation: this.models.part.rotation.clone(),
-                            scale: this.models.part.scale.clone()
-                        });
-                        
-                        console.log(`✅ Part model loaded with ${partPaths.length} components, visible: ${this.models.part.visible}`);
-                    } else {
-                        // Create placeholder for part if no GLB file available
-                        const partGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.8, 32);
-                        const partMaterial = new THREE.MeshStandardMaterial({ color: 0x2ecc71 });
-                        this.models.part = new THREE.Mesh(partGeometry, partMaterial);
-                        this.models.part.position.set(0, 0.4, 0);
-                        this.models.part.visible = false;
-                        this.models.part.userData = { type: 'part' };
-                        this.scene.add(this.models.part);
-                        
-                        // Store original state
-                        this.originalStates.set('part', {
-                            position: this.models.part.position.clone(),
-                            rotation: this.models.part.rotation.clone()
-                        });
-                        console.log('✅ Part placeholder created, visible:', this.models.part.visible);
+                    // Calculate bounding box and scale the entire assembly
+                    const assemblyBox = new THREE.Box3().setFromObject(this.assemblyGroup);
+                    const assemblySize = new THREE.Vector3();
+                    assemblyBox.getSize(assemblySize);
+                    const maxDim = Math.max(assemblySize.x, assemblySize.y, assemblySize.z);
+                    
+                    if (maxDim > 0 && maxDim < 1) {
+                        // Assembly is too small, scale it up
+                        const scaleFactor = 3 / maxDim;
+                        this.assemblyGroup.scale.set(scaleFactor, scaleFactor, scaleFactor);
+                        console.log(`🔍 Assembly scaled by ${scaleFactor.toFixed(2)}x`);
                     }
                     
-                    // Log all models status
-                    console.log('📊 Models status:', {
-                        core: this.models.core ? `loaded (visible: ${this.models.core.visible})` : 'null',
-                        cavity: this.models.cavity ? `loaded (visible: ${this.models.cavity.visible})` : 'null',
-                        part: this.models.part ? `loaded (visible: ${this.models.part.visible})` : 'null'
-                    });
+                    // Populate the parts list UI
+                    this.populatePartsList();
+                    
+                    console.log(`✅ Loaded ${Object.keys(this.components).length} components`);
                     
                     this.updateStatus('✅ 模型加载完成');
                     this.render();
@@ -2460,54 +2376,97 @@
                 }
             }
 
-            // Show a model by type (core, cavity, part)
-            showModel(type) {
-                if (this.models[type]) {
-                    // Set visibility for the model and all its children
-                    this.models[type].visible = true;
-                    this.models[type].traverse((child) => {
+            // Populate the parts list with checkboxes for each component
+            populatePartsList() {
+                const partsListContainer = document.getElementById('parts-list-container');
+                if (!partsListContainer) {
+                    console.warn('Parts list container not found');
+                    return;
+                }
+                
+                // Clear existing content
+                partsListContainer.innerHTML = '';
+                
+                // Get component list for current mold type
+                const componentList = this.modelLoader.modelPaths[this.moldType].components;
+                
+                // Create checkbox for each component
+                componentList.forEach(componentInfo => {
+                    const displayName = this.modelLoader.getComponentDisplayName(this.moldType, componentInfo.name);
+                    
+                    const label = document.createElement('label');
+                    label.className = 'flex items-center space-x-2 cursor-pointer';
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `show-${componentInfo.name}`;
+                    checkbox.className = 'w-4 h-4 text-primary rounded focus:ring-primary';
+                    checkbox.checked = true; // All visible by default
+                    checkbox.setAttribute('aria-label', `显示${displayName}`);
+                    checkbox.dataset.componentName = componentInfo.name;
+                    
+                    // Add change event listener
+                    checkbox.addEventListener('change', (event) => {
+                        const componentName = event.target.dataset.componentName;
+                        if (event.target.checked) {
+                            this.showComponent(componentName);
+                        } else {
+                            this.hideComponent(componentName);
+                        }
+                    });
+                    
+                    const span = document.createElement('span');
+                    span.className = 'text-sm text-gray-700';
+                    span.textContent = displayName;
+                    
+                    label.appendChild(checkbox);
+                    label.appendChild(span);
+                    partsListContainer.appendChild(label);
+                });
+            }
+
+            // Show a component by name
+            showComponent(componentName) {
+                const component = this.components[componentName];
+                if (component) {
+                    component.visible = true;
+                    component.traverse((child) => {
                         if (child.isMesh) {
                             child.visible = true;
                         }
                     });
                     this.render();
-                    this.updateStatus(`✅ ${this.getModelName(type)}已显示`);
                     
-                    // Save state on visibility changes
+                    const displayName = this.modelLoader.getComponentDisplayName(this.moldType, componentName);
+                    this.updateStatus(`✅ ${displayName}已显示`);
+                    
+                    // Save state
                     if (this.stateManager) {
-                        this.stateManager.updateVisibility(type, true);
+                        this.stateManager.updateVisibility(componentName, true);
                     }
                 }
             }
 
-            // Hide a model by type (core, cavity, part)
-            hideModel(type) {
-                if (this.models[type]) {
-                    // Set visibility for the model and all its children
-                    this.models[type].visible = false;
-                    this.models[type].traverse((child) => {
+            // Hide a component by name
+            hideComponent(componentName) {
+                const component = this.components[componentName];
+                if (component) {
+                    component.visible = false;
+                    component.traverse((child) => {
                         if (child.isMesh) {
                             child.visible = false;
                         }
                     });
                     this.render();
-                    this.updateStatus(`❌ ${this.getModelName(type)}已隐藏`);
                     
-                    // Save state on visibility changes
+                    const displayName = this.modelLoader.getComponentDisplayName(this.moldType, componentName);
+                    this.updateStatus(`❌ ${displayName}已隐藏`);
+                    
+                    // Save state
                     if (this.stateManager) {
-                        this.stateManager.updateVisibility(type, false);
+                        this.stateManager.updateVisibility(componentName, false);
                     }
                 }
-            }
-
-            // Get model display name
-            getModelName(type) {
-                const names = {
-                    core: '型芯',
-                    cavity: '型腔',
-                    part: '产品'
-                };
-                return names[type] || type;
             }
 
             // Update status indicator
@@ -2695,7 +2654,7 @@
                 this.updateStatus('✅ 自由转动模式已启用');
             }
 
-            // Mouse event handler for mouse down - detect model selection using raycaster
+            // Mouse event handler for mouse down - detect component selection using raycaster
             onMouseDown(event) {
                 // Only process if in drag mode
                 if (this.operationMode !== 'drag') {
@@ -2710,40 +2669,41 @@
                 // Update raycaster with camera and mouse position
                 this.raycaster.setFromCamera(this.mouse, this.camera);
                 
-                // Get all visible models for raycasting
-                const visibleModels = [];
-                Object.keys(this.models).forEach(type => {
-                    const model = this.models[type];
-                    if (model && model.visible) {
-                        visibleModels.push(model);
+                // Get all visible components for raycasting
+                const visibleComponents = [];
+                Object.keys(this.components).forEach(componentName => {
+                    const component = this.components[componentName];
+                    if (component && component.visible) {
+                        visibleComponents.push(component);
                     }
                 });
                 
                 // Perform raycasting to detect intersections
-                const intersects = this.raycaster.intersectObjects(visibleModels, true);
+                const intersects = this.raycaster.intersectObjects(visibleComponents, true);
                 
                 // If an object was clicked, select it
                 if (intersects.length > 0) {
-                    // Find the top-level model (core, cavity, or part)
-                    let selectedModel = intersects[0].object;
-                    while (selectedModel.parent && !Object.values(this.models).includes(selectedModel)) {
-                        selectedModel = selectedModel.parent;
+                    // Find the top-level component
+                    let selectedComponent = intersects[0].object;
+                    while (selectedComponent.parent && !Object.values(this.components).includes(selectedComponent)) {
+                        selectedComponent = selectedComponent.parent;
                     }
                     
-                    this.selectedObject = selectedModel;
+                    this.selectedObject = selectedComponent;
                     this.isDragging = true;
                     this.canvas.style.cursor = 'grabbing';
                     
-                    // Find the model type
-                    let modelType = null;
-                    Object.keys(this.models).forEach(type => {
-                        if (this.models[type] === selectedModel) {
-                            modelType = type;
+                    // Find the component name
+                    let componentName = null;
+                    Object.keys(this.components).forEach(name => {
+                        if (this.components[name] === selectedComponent) {
+                            componentName = name;
                         }
                     });
                     
-                    if (modelType) {
-                        this.updateStatus(`🖱️ 已选中${this.getModelName(modelType)}`);
+                    if (componentName) {
+                        const displayName = this.modelLoader.getComponentDisplayName(this.moldType, componentName);
+                        this.updateStatus(`🖱️ 已选中${displayName}`);
                     }
                 }
             }
@@ -2777,7 +2737,7 @@
                 }
             }
             
-            // Mouse event handler for mouse up - deselect model
+            // Mouse event handler for mouse up - deselect component
             onMouseUp(event) {
                 // Only process if in drag mode
                 if (this.operationMode !== 'drag') {
@@ -2786,19 +2746,19 @@
                 
                 // Deselect the object
                 if (this.isDragging && this.selectedObject) {
-                    // Save state on model position/rotation changes
+                    // Save state on component position/rotation changes
                     if (this.stateManager) {
-                        // Find the model type
-                        let modelType = null;
-                        Object.keys(this.models).forEach(type => {
-                            if (this.models[type] === this.selectedObject) {
-                                modelType = type;
+                        // Find the component name
+                        let componentName = null;
+                        Object.keys(this.components).forEach(name => {
+                            if (this.components[name] === this.selectedObject) {
+                                componentName = name;
                             }
                         });
                         
-                        if (modelType) {
+                        if (componentName) {
                             this.stateManager.saveModelState(
-                                modelType,
+                                componentName,
                                 this.selectedObject.position,
                                 this.selectedObject.rotation
                             );
@@ -2829,21 +2789,21 @@
                     }
                 });
                 
-                // Reset all model rotations to original values
-                Object.keys(this.models).forEach(type => {
-                    const model = this.models[type];
-                    if (model) {
-                        const originalState = this.originalStates.get(type);
+                // Reset all component rotations to original values
+                Object.keys(this.components).forEach(componentName => {
+                    const component = this.components[componentName];
+                    if (component) {
+                        const originalState = this.originalStates.get(componentName);
                         if (originalState && originalState.rotation) {
-                            model.rotation.copy(originalState.rotation);
+                            component.rotation.copy(originalState.rotation);
                         } else {
                             // If no original state, reset to zero
-                            model.rotation.set(0, 0, 0);
+                            component.rotation.set(0, 0, 0);
                         }
                         
-                        // Save state on model rotation changes
+                        // Save state on component rotation changes
                         if (this.stateManager) {
-                            this.stateManager.saveModelState(type, model.position, model.rotation);
+                            this.stateManager.saveModelState(componentName, component.position, component.rotation);
                         }
                     }
                 });
@@ -2875,46 +2835,37 @@
                 this.updateStatus('✅ 视图已重置');
             }
 
-            // Expand models - move core to Z=-1, cavity to Z=1, part to Z=0
+            // Expand models - spread components apart for better visibility
             expandModels() {
-                // Move core model to Z position -1
-                if (this.models.core) {
-                    this.models.core.position.z = -1;
-                    // Save state on model position changes
-                    if (this.stateManager) {
-                        this.stateManager.saveModelState(
-                            'core',
-                            this.models.core.position,
-                            this.models.core.rotation
-                        );
-                    }
+                // For component-based architecture, we'll spread components radially
+                // This is a simplified implementation - can be enhanced later
+                const componentNames = Object.keys(this.components);
+                const numComponents = componentNames.length;
+                
+                if (numComponents === 0) {
+                    this.updateStatus('⚠️ 没有可展开的组件');
+                    return;
                 }
                 
-                // Move cavity model to Z position 1
-                if (this.models.cavity) {
-                    this.models.cavity.position.z = 1;
-                    // Save state on model position changes
-                    if (this.stateManager) {
-                        this.stateManager.saveModelState(
-                            'cavity',
-                            this.models.cavity.position,
-                            this.models.cavity.rotation
-                        );
+                // Spread components in a circular pattern
+                const radius = 2; // Distance from center
+                componentNames.forEach((componentName, index) => {
+                    const component = this.components[componentName];
+                    if (component) {
+                        const angle = (index / numComponents) * Math.PI * 2;
+                        component.position.x = Math.cos(angle) * radius;
+                        component.position.z = Math.sin(angle) * radius;
+                        
+                        // Save state on component position changes
+                        if (this.stateManager) {
+                            this.stateManager.saveModelState(
+                                componentName,
+                                component.position,
+                                component.rotation
+                            );
+                        }
                     }
-                }
-                
-                // Keep part model at Z position 0
-                if (this.models.part) {
-                    this.models.part.position.z = 0;
-                    // Save state on model position changes
-                    if (this.stateManager) {
-                        this.stateManager.saveModelState(
-                            'part',
-                            this.models.part.position,
-                            this.models.part.rotation
-                        );
-                    }
-                }
+                });
                 
                 // Render scene immediately
                 this.render();
@@ -2923,33 +2874,33 @@
                 this.updateStatus('✅ 模型已展开');
             }
 
-            // Reset model positions - restore all models to original positions and rotations
+            // Reset model positions - restore all components to original positions and rotations
             resetPositions() {
-                // Restore all models to original positions
-                Object.keys(this.models).forEach(type => {
-                    const model = this.models[type];
-                    if (model) {
-                        const originalState = this.originalStates.get(type);
+                // Restore all components to original positions and rotations
+                Object.keys(this.components).forEach(componentName => {
+                    const component = this.components[componentName];
+                    if (component) {
+                        const originalState = this.originalStates.get(componentName);
                         if (originalState) {
                             // Restore original position
                             if (originalState.position) {
-                                model.position.copy(originalState.position);
+                                component.position.copy(originalState.position);
                             } else {
                                 // If no original position, reset to origin
-                                model.position.set(0, 0, 0);
+                                component.position.set(0, 0, 0);
                             }
                             
                             // Restore original rotation
                             if (originalState.rotation) {
-                                model.rotation.copy(originalState.rotation);
+                                component.rotation.copy(originalState.rotation);
                             } else {
                                 // If no original rotation, reset to zero
-                                model.rotation.set(0, 0, 0);
+                                component.rotation.set(0, 0, 0);
                             }
                             
-                            // Save state on model position/rotation changes
+                            // Save state on component position/rotation changes
                             if (this.stateManager) {
-                                this.stateManager.saveModelState(type, model.position, model.rotation);
+                                this.stateManager.saveModelState(componentName, component.position, component.rotation);
                             }
                         }
                     }
@@ -3041,21 +2992,21 @@
                     
                     // Check activeRotations state each frame and apply rotations
                     if (this.activeRotations.x || this.activeRotations.y || this.activeRotations.z) {
-                        // Apply rotation only to visible models
-                        Object.keys(this.models).forEach(type => {
-                            const model = this.models[type];
-                            if (model && model.visible) {
+                        // Apply rotation only to visible components
+                        Object.keys(this.components).forEach(componentName => {
+                            const component = this.components[componentName];
+                            if (component && component.visible) {
                                 // Increment rotation.x by 0.005 if X rotation active
                                 if (this.activeRotations.x) {
-                                    model.rotation.x += 0.005;
+                                    component.rotation.x += 0.005;
                                 }
                                 // Increment rotation.y by 0.005 if Y rotation active
                                 if (this.activeRotations.y) {
-                                    model.rotation.y += 0.005;
+                                    component.rotation.y += 0.005;
                                 }
                                 // Increment rotation.z by 0.005 if Z rotation active
                                 if (this.activeRotations.z) {
-                                    model.rotation.z += 0.005;
+                                    component.rotation.z += 0.005;
                                 }
                             }
                         });
@@ -3123,23 +3074,13 @@
                 if (virtualModeViewer.moldType !== selectedMoldType) {
                     console.log(`🔄 Mold type changed from ${virtualModeViewer.moldType} to ${selectedMoldType}, reloading models...`);
                     
-                    // Clear existing models
-                    if (virtualModeViewer.models.core) {
-                        virtualModeViewer.scene.remove(virtualModeViewer.models.core);
-                    }
-                    if (virtualModeViewer.models.cavity) {
-                        virtualModeViewer.scene.remove(virtualModeViewer.models.cavity);
-                    }
-                    if (virtualModeViewer.models.part) {
-                        virtualModeViewer.scene.remove(virtualModeViewer.models.part);
+                    // Clear existing assembly group
+                    if (virtualModeViewer.assemblyGroup) {
+                        virtualModeViewer.scene.remove(virtualModeViewer.assemblyGroup);
                     }
                     
-                    // Reset models
-                    virtualModeViewer.models = {
-                        core: null,
-                        cavity: null,
-                        part: null
-                    };
+                    // Reset components
+                    virtualModeViewer.components = {};
                     virtualModeViewer.originalStates.clear();
                     
                     // Set new mold type
@@ -3367,27 +3308,9 @@
 
         // Set up checkbox event listeners
         function setupCheckboxListeners() {
-            const checkboxes = [
-                { id: 'show-core', type: 'core' },
-                { id: 'show-cavity', type: 'cavity' },
-                { id: 'show-part', type: 'part' }
-            ];
-
-            checkboxes.forEach(({ id, type }) => {
-                const checkbox = document.getElementById(id);
-                if (checkbox) {
-                    checkbox.addEventListener('change', (event) => {
-                        if (virtualModeViewer) {
-                            if (event.target.checked) {
-                                virtualModeViewer.showModel(type);
-                            } else {
-                                virtualModeViewer.hideModel(type);
-                            }
-                        }
-                    });
-                }
-            });
-
+            // Note: Individual component checkboxes are now created dynamically by populatePartsList()
+            // This function only handles the bulk selection buttons
+            
             // Set up bulk selection buttons
             const selectAllBtn = document.getElementById('select-all-parts');
             const deselectAllBtn = document.getElementById('deselect-all-parts');
@@ -3396,11 +3319,11 @@
                 selectAllBtn.addEventListener('click', () => {
                     if (virtualModeViewer) {
                         // Check all checkboxes
-                        checkboxes.forEach(({ id, type }) => {
-                            const checkbox = document.getElementById(id);
+                        Object.keys(virtualModeViewer.components).forEach(componentName => {
+                            const checkbox = document.getElementById(`show-${componentName}`);
                             if (checkbox && !checkbox.checked) {
                                 checkbox.checked = true;
-                                virtualModeViewer.showModel(type);
+                                virtualModeViewer.showComponent(componentName);
                             }
                         });
                         // Update status
@@ -3413,11 +3336,11 @@
                 deselectAllBtn.addEventListener('click', () => {
                     if (virtualModeViewer) {
                         // Uncheck all checkboxes
-                        checkboxes.forEach(({ id, type }) => {
-                            const checkbox = document.getElementById(id);
+                        Object.keys(virtualModeViewer.components).forEach(componentName => {
+                            const checkbox = document.getElementById(`show-${componentName}`);
                             if (checkbox && checkbox.checked) {
                                 checkbox.checked = false;
-                                virtualModeViewer.hideModel(type);
+                                virtualModeViewer.hideComponent(componentName);
                             }
                         });
                         // Update status
