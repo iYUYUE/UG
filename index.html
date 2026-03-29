@@ -384,14 +384,6 @@
                             </div>
                         </div>
 
-                        <!-- 视图控制 -->
-                        <div role="group" aria-labelledby="view-control-heading">
-                            <h4 id="view-control-heading" class="text-lg font-bold text-gray-800 mb-3 border-b pb-2">视图控制</h4>
-                            <button id="reset-view" class="w-full btn-secondary text-sm py-2" aria-label="重置相机视图到默认位置">
-                                重置视图
-                            </button>
-                        </div>
-
                         <!-- 操作模式 -->
                         <div role="group" aria-labelledby="operation-mode-heading">
                             <h4 id="operation-mode-heading" class="text-lg font-bold text-gray-800 mb-3 border-b pb-2">操作模式</h4>
@@ -405,47 +397,26 @@
                                 <button id="disable-ops" class="w-full text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded transition-colors" aria-label="关闭所有操作模式">
                                     关闭拖动/转动
                                 </button>
-                            </div>
-                        </div>
-
-                        <!-- 模型操作 -->
-                        <div role="group" aria-labelledby="model-operations-heading">
-                            <h4 id="model-operations-heading" class="text-lg font-bold text-gray-800 mb-3 border-b pb-2">模型操作</h4>
-                            <div class="space-y-2">
                                 <button id="rotate-x" data-toggle="false" class="w-full text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded transition-colors" aria-label="切换绕X轴自动旋转" aria-pressed="false">
                                     绕X轴旋转
                                 </button>
                                 <button id="rotate-y" data-toggle="false" class="w-full text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded transition-colors" aria-label="切换绕Y轴自动旋转" aria-pressed="false">
                                     绕Y轴旋转
                                 </button>
-                                <button id="rotate-z" data-toggle="false" class="w-full text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded transition-colors" aria-label="切换绕Z轴自动旋转" aria-pressed="false">
-                                    绕Z轴旋转
-                                </button>
                                 <button id="expand-models" class="w-full text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded transition-colors" aria-label="展开所有模型零件以查看间距">
                                     展开所有模型
                                 </button>
-                                <button id="reset-positions" class="w-full text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded transition-colors" aria-label="重置所有模型到初始位置和旋转">
-                                    重置模型位置
+                                <button id="reset-positions" class="w-full text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded transition-colors" aria-label="重置全部：恢复所有零件位置、旋转并重置视图">
+                                    重置全部
                                 </button>
                             </div>
                         </div>
 
-                        <!-- 显示设置 -->
-                        <div role="group" aria-labelledby="display-settings-heading">
-                            <h4 id="display-settings-heading" class="text-lg font-bold text-gray-800 mb-3 border-b pb-2">显示设置</h4>
-                            <div class="space-y-2">
-                                <button id="toggle-axes" class="w-full text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded transition-colors" aria-label="切换坐标系显示或隐藏" aria-pressed="true">
-                                    坐标系显/隐
-                                </button>
-                                <button id="toggle-background" class="w-full text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded transition-colors" aria-label="在浅色和深色背景之间切换">
-                                    切换背景色
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- 状态指示器 -->
-                        <div id="virtual-status-indicator" class="text-xs rounded p-2 text-center" style="background-color: #e8f3ff; color: #165DFF;" role="status" aria-live="polite" aria-atomic="true">
-                            初始化中...
+                        <!-- 隐藏但保留功能的按钮（不显示） -->
+                        <div style="display:none">
+                            <button id="rotate-z" data-toggle="false" aria-pressed="false"></button>
+                            <button id="toggle-axes" aria-pressed="true"></button>
+                            <button id="toggle-background"></button>
                         </div>
                     </div>
                 </aside>
@@ -478,6 +449,11 @@
                                 <div style="position: absolute; right: -5px; top: -4px; width: 0; height: 0; border-left: 10px solid #1e88e5; border-top: 5px solid transparent; border-bottom: 5px solid transparent;"></div>
                                 <div style="position: absolute; right: -16px; top: -8px; color: #1e88e5; font-size: 12px; font-weight: bold; line-height:1;">Z</div>
                             </div>
+                        </div>
+
+                        <!-- 状态指示器 (底部居中) -->
+                        <div id="virtual-status-indicator" class="text-xs rounded px-3 py-1.5 text-center" style="position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); background-color: #e8f3ff; color: #165DFF; white-space: nowrap; z-index: 9999;" role="status" aria-live="polite" aria-atomic="true">
+                            初始化中...
                         </div>
                     </div>
                 </div>
@@ -2896,8 +2872,23 @@
                 this.updateStatus('✅ 模型已展开');
             }
 
-            // Reset model positions - restore all components to original positions and rotations
+            // Reset all - restore components, camera, and stop rotations
             resetPositions() {
+                // Stop all active axis rotations
+                this.activeRotations.x = false;
+                this.activeRotations.y = false;
+                this.activeRotations.z = false;
+
+                // Update button styling for all rotation buttons
+                ['x', 'y', 'z'].forEach(axis => {
+                    const button = document.getElementById(`rotate-${axis}`);
+                    if (button) {
+                        button.classList.remove('btn-toggle-active');
+                        button.classList.add('bg-gray-100', 'hover:bg-gray-200', 'text-gray-700');
+                        button.setAttribute('aria-pressed', 'false');
+                    }
+                });
+
                 // Restore all components to original positions and rotations
                 Object.keys(this.components).forEach(componentName => {
                     const component = this.components[componentName];
@@ -2952,7 +2943,7 @@
                 this.render();
                 
                 // Update status
-                this.updateStatus('✅ 模型位置已重置');
+                this.updateStatus('✅ 已重置全部');
             }
 
             // Toggle coordinate system visibility
@@ -3403,16 +3394,6 @@
                 });
             }
 
-            // Reset view button
-            const resetViewBtn = document.getElementById('reset-view');
-            if (resetViewBtn) {
-                resetViewBtn.addEventListener('click', () => {
-                    if (virtualModeViewer) {
-                        virtualModeViewer.resetView();
-                    }
-                });
-            }
-
             // Enable drag mode button
             const enableDragBtn = document.getElementById('enable-drag');
             if (enableDragBtn) {
@@ -3554,7 +3535,6 @@
             const virtualModeButtons = [
                 'select-all-parts',
                 'deselect-all-parts',
-                'reset-view',
                 'enable-drag',
                 'free-rotation',
                 'disable-ops',
