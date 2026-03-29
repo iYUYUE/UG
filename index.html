@@ -137,7 +137,7 @@
                 </button> -->
                 <button id="btn-stats" class="btn-secondary flex items-center space-x-1">
                     <i class="fa fa-bar-chart"></i>
-                    <span>学习统计</span>
+                    <span>分析统计</span>
                 </button>
                 <button id="btn-favorites" class="btn-secondary flex items-center space-x-1">
                     <i class="fa fa-star"></i>
@@ -368,9 +368,9 @@
                 <!-- 控制面板 (左侧固定侧边栏) -->
                 <aside class="w-[280px] flex-shrink-0">
                     <div class="bg-white rounded-xl shadow-lg p-6 space-y-6">
-                        <!-- 零件列表 -->
+                        <!-- 零部件列表 -->
                         <div role="group" aria-labelledby="parts-list-heading">
-                            <h4 id="parts-list-heading" class="text-lg font-bold text-gray-800 mb-3 border-b pb-2">零件列表</h4>
+                            <h4 id="parts-list-heading" class="text-lg font-bold text-gray-800 mb-3 border-b pb-2">零部件列表</h4>
                             <div id="parts-list-container" class="space-y-2">
                                 <!-- Parts will be dynamically populated based on mold type -->
                             </div>
@@ -457,26 +457,26 @@
                         <canvas id="virtual-canvas" class="w-full h-full" role="img" aria-label="3D模具模型视图"></canvas>
                         
                         <!-- 坐标系指示器 (左下角) -->
-                        <div class="axes-ui" id="coordinate-system" style="position: absolute; left: 30px; bottom: 30px; z-index: 9999; width: 120px; height: 120px;">
-                            <!-- 原点 -->
-                            <div class="axis-origin" style="position: absolute; top: 90px; left: 20px; width: 12px; height: 12px; background: #333; border-radius: 50%; z-index: 10; box-shadow: 0 0 6px rgba(0,0,0,0.5);"></div>
+                        <div class="axes-ui" id="coordinate-system" style="position: absolute; left: 16px; bottom: 16px; z-index: 9999; width: 90px; height: 90px;">
+                            <!-- 原点：居中偏右下，给Z轴留左下空间 -->
+                            <div class="axis-origin" style="position: absolute; top: 52px; left: 38px; width: 6px; height: 6px; background: #555; border-radius: 50%; z-index: 10;"></div>
                             
                             <!-- X轴：水平向右 (红色) -->
-                            <div class="axis-x" style="position: absolute; top: 90px; left: 20px; width: 90px; height: 5px; background: linear-gradient(to right, #ff0000, #ff4444); transform: rotate(0deg); transform-origin: left center; box-shadow: 0 2px 6px rgba(255,0,0,0.4);">
-                                <div style="position: absolute; right: -2px; top: -7px; width: 0; height: 0; border-left: 16px solid #ff0000; border-top: 10px solid transparent; border-bottom: 10px solid transparent;"></div>
-                                <div style="position: absolute; right: -30px; top: -15px; color: #ff0000; font-size: 20px; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.5), 0 0 10px rgba(255,255,255,0.8);">X</div>
+                            <div class="axis-x" style="position: absolute; top: 54px; left: 38px; width: 40px; height: 2px; background: #e53935; transform-origin: left center;">
+                                <div style="position: absolute; right: -5px; top: -4px; width: 0; height: 0; border-left: 10px solid #e53935; border-top: 5px solid transparent; border-bottom: 5px solid transparent;"></div>
+                                <div style="position: absolute; right: -16px; top: -8px; color: #e53935; font-size: 12px; font-weight: bold; line-height:1;">X</div>
                             </div>
                             
                             <!-- Y轴：垂直向上 (绿色) -->
-                            <div class="axis-y" style="position: absolute; top: 90px; left: 20px; width: 5px; height: 90px; background: linear-gradient(to top, #00ff00, #44ff44); transform: translateY(-100%); transform-origin: center bottom; box-shadow: 2px 0 6px rgba(0,255,0,0.4);">
-                                <div style="position: absolute; top: -2px; left: -7px; width: 0; height: 0; border-bottom: 16px solid #00ff00; border-left: 10px solid transparent; border-right: 10px solid transparent;"></div>
-                                <div style="position: absolute; top: -30px; left: -15px; color: #00ff00; font-size: 20px; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.5), 0 0 10px rgba(255,255,255,0.8);">Y</div>
+                            <div class="axis-y" style="position: absolute; top: 10px; left: 39px; width: 2px; height: 42px; background: #43a047; transform-origin: center bottom;">
+                                <div style="position: absolute; top: -5px; left: -4px; width: 0; height: 0; border-bottom: 10px solid #43a047; border-left: 5px solid transparent; border-right: 5px solid transparent;"></div>
+                                <div style="position: absolute; top: -16px; left: -4px; color: #43a047; font-size: 12px; font-weight: bold; line-height:1;">Y</div>
                             </div>
                             
-                            <!-- Z轴：对角向观察者 (蓝色) -->
-                            <div class="axis-z" style="position: absolute; top: 90px; left: 20px; width: 90px; height: 5px; background: linear-gradient(135deg, #0000ff, #4444ff); transform: rotate(-45deg); transform-origin: left center; box-shadow: 0 2px 6px rgba(0,0,255,0.4);">
-                                <div style="position: absolute; right: -2px; top: -7px; width: 0; height: 0; border-left: 16px solid #0000ff; border-top: 10px solid transparent; border-bottom: 10px solid transparent;"></div>
-                                <div style="position: absolute; right: -30px; top: -15px; color: #0000ff; font-size: 20px; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.5), 0 0 10px rgba(255,255,255,0.8);">Z</div>
+                            <!-- Z轴：对角向左下 (蓝色) -->
+                            <div class="axis-z" style="position: absolute; top: 54px; left: 38px; width: 40px; height: 2px; background: #1e88e5; transform: rotate(135deg); transform-origin: left center;">
+                                <div style="position: absolute; right: -5px; top: -4px; width: 0; height: 0; border-left: 10px solid #1e88e5; border-top: 5px solid transparent; border-bottom: 5px solid transparent;"></div>
+                                <div style="position: absolute; right: -16px; top: -8px; color: #1e88e5; font-size: 12px; font-weight: bold; line-height:1;">Z</div>
                             </div>
                         </div>
                     </div>
@@ -530,11 +530,11 @@
             </div>
         </section>
 
-        <!-- 学习统计页面 -->
+        <!-- 分析统计页面 -->
         <section id="stats-section" class="hidden animate-fade-in">
             <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
                 <div class="flex justify-between items-center">
-                    <h3 class="text-xl font-bold text-gray-800">学习统计</h3>
+                    <h3 class="text-xl font-bold text-gray-800">分析统计</h3>
                     <button id="btn-back-to-welcome-from-stats" class="btn-secondary flex items-center space-x-1">
                         <i class="fa fa-arrow-left"></i>
                         <span>返回首页</span>
