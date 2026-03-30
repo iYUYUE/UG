@@ -363,10 +363,24 @@
                 </div>
             </div>
 
+            <!-- 手机端：零部件列表横向 chip 条 -->
+            <div class="md:hidden bg-white rounded-xl shadow-lg px-3 py-2 mb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-500 flex-shrink-0">零部件</span>
+                    <div id="parts-list-container-mobile" class="flex gap-2 overflow-x-auto pb-1" style="scrollbar-width:none;">
+                        <!-- chips populated by JS -->
+                    </div>
+                    <div class="flex gap-1 flex-shrink-0 ml-auto">
+                        <button id="select-all-parts" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 py-1 px-2 rounded whitespace-nowrap" aria-label="选择所有零件">全选</button>
+                        <button id="deselect-all-parts" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 py-1 px-2 rounded whitespace-nowrap" aria-label="取消选择所有零件">取消</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- 虚拟模式内容区域 -->
             <div class="flex gap-6">
-                <!-- 控制面板 (左侧固定侧边栏) -->
-                <aside class="w-[280px] flex-shrink-0">
+                <!-- 控制面板 (左侧固定侧边栏，仅桌面端显示) -->
+                <aside class="hidden md:block w-[280px] flex-shrink-0">
                     <div class="bg-white rounded-xl shadow-lg p-6 space-y-6">
                         <!-- 零部件列表 -->
                         <div role="group" aria-labelledby="parts-list-heading">
@@ -375,10 +389,10 @@
                                 <!-- Parts will be dynamically populated based on mold type -->
                             </div>
                             <div class="flex gap-2 mt-3">
-                                <button id="select-all-parts" class="flex-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded transition-colors" aria-label="选择所有零件">
+                                <button id="select-all-parts-desktop" class="flex-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded transition-colors" aria-label="选择所有零件">
                                     全选
                                 </button>
-                                <button id="deselect-all-parts" class="flex-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded transition-colors" aria-label="取消选择所有零件">
+                                <button id="deselect-all-parts-desktop" class="flex-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded transition-colors" aria-label="取消选择所有零件">
                                     取消全选
                                 </button>
                             </div>
@@ -423,7 +437,7 @@
 
                 <!-- 预览区域 (右侧弹性区域) -->
                 <div class="flex-1 relative">
-                    <div class="bg-white rounded-xl shadow-lg overflow-hidden relative" style="height: calc(100vh - 200px);">
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden relative" style="height: calc(100vh - 200px); min-height: 300px;">
                         <!-- 3D Canvas -->
                         <canvas id="virtual-canvas" class="w-full h-full" role="img" aria-label="3D模具模型视图"></canvas>
                         
@@ -456,6 +470,40 @@
                             初始化中...
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- 手机端：底部操作工具栏 -->
+            <div class="md:hidden bg-white rounded-xl shadow-lg mt-3 px-2 py-2">
+                <div class="flex justify-around items-center gap-1">
+                    <button id="enable-drag-mobile" class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg bg-gray-100 active:bg-blue-100 transition-colors min-w-0 flex-1" aria-label="开启拖动" aria-pressed="false">
+                        <i class="fa fa-hand-paper-o text-gray-600 text-base"></i>
+                        <span class="text-xs text-gray-600 leading-tight">拖动</span>
+                    </button>
+                    <button id="free-rotation-mobile" class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg bg-gray-100 active:bg-blue-100 transition-colors min-w-0 flex-1" aria-label="自由转动" aria-pressed="false">
+                        <i class="fa fa-refresh text-gray-600 text-base"></i>
+                        <span class="text-xs text-gray-600 leading-tight">转动</span>
+                    </button>
+                    <button id="disable-ops-mobile" class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg bg-gray-100 active:bg-blue-100 transition-colors min-w-0 flex-1" aria-label="关闭操作">
+                        <i class="fa fa-ban text-gray-600 text-base"></i>
+                        <span class="text-xs text-gray-600 leading-tight">关闭</span>
+                    </button>
+                    <button id="rotate-x-mobile" data-toggle="false" class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg bg-gray-100 active:bg-blue-100 transition-colors min-w-0 flex-1" aria-label="绕X轴旋转" aria-pressed="false">
+                        <i class="fa fa-arrows-h text-gray-600 text-base"></i>
+                        <span class="text-xs text-gray-600 leading-tight">旋X</span>
+                    </button>
+                    <button id="rotate-y-mobile" data-toggle="false" class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg bg-gray-100 active:bg-blue-100 transition-colors min-w-0 flex-1" aria-label="绕Y轴旋转" aria-pressed="false">
+                        <i class="fa fa-arrows-v text-gray-600 text-base"></i>
+                        <span class="text-xs text-gray-600 leading-tight">旋Y</span>
+                    </button>
+                    <button id="expand-models-mobile" class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg bg-gray-100 active:bg-blue-100 transition-colors min-w-0 flex-1" aria-label="展开所有模型">
+                        <i class="fa fa-expand text-gray-600 text-base"></i>
+                        <span class="text-xs text-gray-600 leading-tight">展开</span>
+                    </button>
+                    <button id="reset-positions-mobile" class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg bg-gray-100 active:bg-blue-100 transition-colors min-w-0 flex-1" aria-label="重置全部">
+                        <i class="fa fa-undo text-gray-600 text-base"></i>
+                        <span class="text-xs text-gray-600 leading-tight">重置</span>
+                    </button>
                 </div>
             </div>
         </section>
@@ -2351,7 +2399,17 @@
                     this.populatePartsList();
                     
                     console.log(`✅ Loaded ${Object.keys(this.components).length} components`);
-                    
+
+                    // Debug: print bounding box of entire assembly to understand scene scale
+                    const debugBox = new THREE.Box3().setFromObject(this.assemblyGroup);
+                    const debugSize = new THREE.Vector3();
+                    debugBox.getSize(debugSize);
+                    const debugCenter = new THREE.Vector3();
+                    debugBox.getCenter(debugCenter);
+                    console.log(`Assembly bounding box - size: x=${debugSize.x.toFixed(3)} y=${debugSize.y.toFixed(3)} z=${debugSize.z.toFixed(3)}, center: x=${debugCenter.x.toFixed(3)} y=${debugCenter.y.toFixed(3)} z=${debugCenter.z.toFixed(3)}`);
+                    console.log(`Camera position: x=${this.camera.position.x} y=${this.camera.position.y} z=${this.camera.position.z}`);
+                    console.log(`AssemblyGroup scale: x=${this.assemblyGroup.scale.x.toFixed(3)} y=${this.assemblyGroup.scale.y.toFixed(3)} z=${this.assemblyGroup.scale.z.toFixed(3)}`);
+
                     this.updateStatus('✅ 模型加载完成');
                     this.render();
                 } catch (error) {
@@ -2363,49 +2421,93 @@
             // Populate the parts list with checkboxes for each component
             populatePartsList() {
                 const partsListContainer = document.getElementById('parts-list-container');
-                if (!partsListContainer) {
+                const mobileContainer = document.getElementById('parts-list-container-mobile');
+                if (!partsListContainer && !mobileContainer) {
                     console.warn('Parts list container not found');
                     return;
                 }
-                
-                // Clear existing content
-                partsListContainer.innerHTML = '';
-                
+
+                if (partsListContainer) partsListContainer.innerHTML = '';
+                if (mobileContainer) mobileContainer.innerHTML = '';
+
                 // Get component list for current mold type
                 const componentList = this.modelLoader.modelPaths[this.moldType].components;
-                
+
                 // Create checkbox for each component
                 componentList.forEach(componentInfo => {
                     const displayName = this.modelLoader.getComponentDisplayName(this.moldType, componentInfo.name);
-                    
-                    const label = document.createElement('label');
-                    label.className = 'flex items-center space-x-2 cursor-pointer';
-                    
-                    const checkbox = document.createElement('input');
-                    checkbox.type = 'checkbox';
-                    checkbox.id = `show-${componentInfo.name}`;
-                    checkbox.className = 'w-4 h-4 text-primary rounded focus:ring-primary';
-                    checkbox.checked = true; // All visible by default
-                    checkbox.setAttribute('aria-label', `显示${displayName}`);
-                    checkbox.dataset.componentName = componentInfo.name;
-                    
-                    // Add change event listener
-                    checkbox.addEventListener('change', (event) => {
-                        const componentName = event.target.dataset.componentName;
-                        if (event.target.checked) {
-                            this.showComponent(componentName);
-                        } else {
-                            this.hideComponent(componentName);
-                        }
-                    });
-                    
-                    const span = document.createElement('span');
-                    span.className = 'text-sm text-gray-700';
-                    span.textContent = displayName;
-                    
-                    label.appendChild(checkbox);
-                    label.appendChild(span);
-                    partsListContainer.appendChild(label);
+
+                    // --- Desktop: checkbox label ---
+                    if (partsListContainer) {
+                        const label = document.createElement('label');
+                        label.className = 'flex items-center space-x-2 cursor-pointer';
+
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.id = `show-${componentInfo.name}`;
+                        checkbox.className = 'w-4 h-4 text-primary rounded focus:ring-primary';
+                        checkbox.checked = true;
+                        checkbox.setAttribute('aria-label', `显示${displayName}`);
+                        checkbox.dataset.componentName = componentInfo.name;
+
+                        checkbox.addEventListener('change', (event) => {
+                            const componentName = event.target.dataset.componentName;
+                            // sync mobile chip
+                            const mobileChip = document.getElementById(`chip-${componentName}`);
+                            if (mobileChip) mobileChip.dataset.checked = event.target.checked ? 'true' : 'false';
+                            if (mobileChip) mobileChip.classList.toggle('bg-primary', event.target.checked);
+                            if (mobileChip) mobileChip.classList.toggle('text-white', event.target.checked);
+                            if (mobileChip) mobileChip.classList.toggle('bg-gray-100', !event.target.checked);
+                            if (mobileChip) mobileChip.classList.toggle('text-gray-500', !event.target.checked);
+                            if (event.target.checked) {
+                                this.showComponent(componentName);
+                            } else {
+                                this.hideComponent(componentName);
+                            }
+                        });
+
+                        const span = document.createElement('span');
+                        span.className = 'text-sm text-gray-700';
+                        span.textContent = displayName;
+
+                        label.appendChild(checkbox);
+                        label.appendChild(span);
+                        partsListContainer.appendChild(label);
+                    }
+
+                    // --- Mobile: chip button ---
+                    if (mobileContainer) {
+                        const chip = document.createElement('button');
+                        chip.id = `chip-${componentInfo.name}`;
+                        chip.dataset.componentName = componentInfo.name;
+                        chip.dataset.checked = 'true';
+                        chip.className = 'flex-shrink-0 text-xs px-2.5 py-1 rounded-full bg-primary text-white transition-colors whitespace-nowrap';
+                        chip.setAttribute('aria-label', `显示${displayName}`);
+                        chip.setAttribute('aria-pressed', 'true');
+                        chip.textContent = displayName;
+
+                        chip.addEventListener('click', () => {
+                            const componentName = chip.dataset.componentName;
+                            const isChecked = chip.dataset.checked === 'true';
+                            const newChecked = !isChecked;
+                            chip.dataset.checked = newChecked ? 'true' : 'false';
+                            chip.setAttribute('aria-pressed', String(newChecked));
+                            chip.classList.toggle('bg-primary', newChecked);
+                            chip.classList.toggle('text-white', newChecked);
+                            chip.classList.toggle('bg-gray-100', !newChecked);
+                            chip.classList.toggle('text-gray-500', !newChecked);
+                            // sync desktop checkbox
+                            const desktopCb = document.getElementById(`show-${componentName}`);
+                            if (desktopCb) desktopCb.checked = newChecked;
+                            if (newChecked) {
+                                this.showComponent(componentName);
+                            } else {
+                                this.hideComponent(componentName);
+                            }
+                        });
+
+                        mobileContainer.appendChild(chip);
+                    }
                 });
             }
 
@@ -2487,20 +2589,23 @@
                     }
                 }
                 
-                // Update button styling to show active state
+                // Update button styling to show active state (desktop + mobile)
                 const buttonId = `rotate-${axis}`;
-                const button = document.getElementById(buttonId);
-                if (button) {
-                    if (this.activeRotations[axis]) {
-                        button.classList.add('btn-toggle-active');
-                        button.classList.remove('bg-gray-100', 'hover:bg-gray-200', 'text-gray-700');
-                        button.setAttribute('aria-pressed', 'true');
-                    } else {
-                        button.classList.remove('btn-toggle-active');
-                        button.classList.add('bg-gray-100', 'hover:bg-gray-200', 'text-gray-700');
-                        button.setAttribute('aria-pressed', 'false');
+                const mobileButtonId = `rotate-${axis}-mobile`;
+                [buttonId, mobileButtonId].forEach(id => {
+                    const button = document.getElementById(id);
+                    if (button) {
+                        if (this.activeRotations[axis]) {
+                            button.classList.add('btn-toggle-active');
+                            button.classList.remove('bg-gray-100', 'hover:bg-gray-200', 'text-gray-700');
+                            button.setAttribute('aria-pressed', 'true');
+                        } else {
+                            button.classList.remove('btn-toggle-active');
+                            button.classList.add('bg-gray-100', 'hover:bg-gray-200', 'text-gray-700');
+                            button.setAttribute('aria-pressed', 'false');
+                        }
                     }
-                }
+                });
                 
                 // Display status message indicating rotation state
                 const axisName = axis.toUpperCase();
@@ -2556,6 +2661,24 @@
                     freeRotBtn.classList.add('bg-gray-100', 'hover:bg-gray-200', 'text-gray-700');
                     freeRotBtn.setAttribute('aria-pressed', 'false');
                 }
+
+                // Reset mobile buttons too
+                ['enable-drag-mobile', 'free-rotation-mobile'].forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) {
+                        btn.classList.remove('btn-toggle-active', 'bg-blue-100');
+                        btn.classList.add('bg-gray-100');
+                        btn.setAttribute('aria-pressed', 'false');
+                    }
+                });
+                ['rotate-x-mobile', 'rotate-y-mobile'].forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) {
+                        btn.classList.remove('btn-toggle-active', 'bg-blue-100');
+                        btn.classList.add('bg-gray-100');
+                        btn.setAttribute('aria-pressed', 'false');
+                    }
+                });
             }
 
             // Enable drag mode - allows dragging individual model parts
@@ -2579,13 +2702,15 @@
                 this.activeRotations.y = false;
                 this.activeRotations.z = false;
                 
-                // Update button styling for drag button
-                const dragBtn = document.getElementById('enable-drag');
-                if (dragBtn) {
-                    dragBtn.classList.add('btn-toggle-active');
-                    dragBtn.classList.remove('bg-gray-100', 'hover:bg-gray-200', 'text-gray-700');
-                    dragBtn.setAttribute('aria-pressed', 'true');
-                }
+                // Update button styling for drag button (desktop + mobile)
+                ['enable-drag', 'enable-drag-mobile'].forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) {
+                        btn.classList.add('btn-toggle-active');
+                        btn.classList.remove('bg-gray-100', 'hover:bg-gray-200', 'text-gray-700');
+                        btn.setAttribute('aria-pressed', 'true');
+                    }
+                });
                 
                 // Display status message
                 this.updateStatus('✅ 拖动模式已启用');
@@ -2626,13 +2751,15 @@
                 this.activeRotations.y = false;
                 this.activeRotations.z = false;
                 
-                // Update button styling for free rotation button
-                const freeRotBtn = document.getElementById('free-rotation');
-                if (freeRotBtn) {
-                    freeRotBtn.classList.add('btn-toggle-active');
-                    freeRotBtn.classList.remove('bg-gray-100', 'hover:bg-gray-200', 'text-gray-700');
-                    freeRotBtn.setAttribute('aria-pressed', 'true');
-                }
+                // Update button styling for free rotation button (desktop + mobile)
+                ['free-rotation', 'free-rotation-mobile'].forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) {
+                        btn.classList.add('btn-toggle-active');
+                        btn.classList.remove('bg-gray-100', 'hover:bg-gray-200', 'text-gray-700');
+                        btn.setAttribute('aria-pressed', 'true');
+                    }
+                });
                 
                 // Display status message
                 this.updateStatus('✅ 自由转动模式已启用');
@@ -2835,40 +2962,48 @@
 
             // Expand models - spread components apart for better visibility
             expandModels() {
-                // For component-based architecture, we'll spread components radially
-                // This is a simplified implementation - can be enhanced later
                 const componentNames = Object.keys(this.components);
                 const numComponents = componentNames.length;
-                
+
                 if (numComponents === 0) {
                     this.updateStatus('⚠️ 没有可展开的组件');
                     return;
                 }
-                
-                // Spread components in a circular pattern
-                const radius = 2; // Distance from center
+
+                // Simple fixed spacing based on initial camera distance
+                // Assembly fits in ~3 world units, assemblyGroup.scale=15, so local spacing = world_spacing / scale
+                const cols = Math.ceil(Math.sqrt(numComponents));
+                const rows = Math.ceil(numComponents / cols);
+                const groupScale = this.assemblyGroup.scale.x || 1;
+                const worldSpacing = 2.0; // world units between parts
+                const localSpacing = worldSpacing / groupScale;
+
                 componentNames.forEach((componentName, index) => {
                     const component = this.components[componentName];
                     if (component) {
-                        const angle = (index / numComponents) * Math.PI * 2;
-                        component.position.x = Math.cos(angle) * radius;
-                        component.position.z = Math.sin(angle) * radius;
-                        
-                        // Save state on component position changes
+                        const col = index % cols;
+                        const row = Math.floor(index / cols);
+                        component.position.x = (col - (cols - 1) / 2) * localSpacing;
+                        component.position.y = 0;
+                        component.position.z = (row - (rows - 1) / 2) * localSpacing;
                         if (this.stateManager) {
-                            this.stateManager.saveModelState(
-                                componentName,
-                                component.position,
-                                component.rotation
-                            );
+                            this.stateManager.saveModelState(componentName, component.position, component.rotation);
                         }
                     }
                 });
-                
-                // Render scene immediately
+
+                // Camera: fixed multiplier on initial position, independent of spacing
+                const gridWorldSpan = Math.max(cols, rows) * worldSpacing;
+                const assemblyWorldSpan = 3.0;
+                const camScale = (gridWorldSpan / assemblyWorldSpan) * 0.55;
+                this.camera.position.set(0, 5 * camScale, 8 * camScale);
+                this.camera.lookAt(0, 0, 0);
+                if (this.controls) {
+                    this.controls.target.set(0, 0, 0);
+                    this.controls.update();
+                }
+
                 this.render();
-                
-                // Update status
                 this.updateStatus('✅ 模型已展开');
             }
 
@@ -3095,6 +3230,14 @@
                     // Reset components
                     virtualModeViewer.components = {};
                     virtualModeViewer.originalStates.clear();
+
+                    // Reset camera to default position
+                    virtualModeViewer.camera.position.set(0, 5, 8);
+                    virtualModeViewer.camera.lookAt(0, 0, 0);
+                    if (virtualModeViewer.controls) {
+                        virtualModeViewer.controls.target.set(0, 0, 0);
+                        virtualModeViewer.controls.update();
+                    }
                     
                     // Set new mold type
                     virtualModeViewer.setMoldType(selectedMoldType);
@@ -3321,46 +3464,31 @@
 
         // Set up checkbox event listeners
         function setupCheckboxListeners() {
-            // Note: Individual component checkboxes are now created dynamically by populatePartsList()
-            // This function only handles the bulk selection buttons
-            
-            // Set up bulk selection buttons
-            const selectAllBtn = document.getElementById('select-all-parts');
-            const deselectAllBtn = document.getElementById('deselect-all-parts');
-
-            if (selectAllBtn) {
-                selectAllBtn.addEventListener('click', () => {
-                    if (virtualModeViewer) {
-                        // Check all checkboxes
-                        Object.keys(virtualModeViewer.components).forEach(componentName => {
-                            const checkbox = document.getElementById(`show-${componentName}`);
-                            if (checkbox && !checkbox.checked) {
-                                checkbox.checked = true;
-                                virtualModeViewer.showComponent(componentName);
-                            }
-                        });
-                        // Update status
-                        virtualModeViewer.updateStatus('✅ 已全选所有零件');
+            // Helper: select/deselect all components and sync both desktop + mobile UI
+            function selectAll(show) {
+                if (!virtualModeViewer) return;
+                Object.keys(virtualModeViewer.components).forEach(componentName => {
+                    const checkbox = document.getElementById(`show-${componentName}`);
+                    const chip = document.getElementById(`chip-${componentName}`);
+                    if (show) {
+                        if (checkbox && !checkbox.checked) { checkbox.checked = true; virtualModeViewer.showComponent(componentName); }
+                        if (chip) { chip.dataset.checked = 'true'; chip.setAttribute('aria-pressed', 'true'); chip.classList.add('bg-primary','text-white'); chip.classList.remove('bg-gray-100','text-gray-500'); }
+                    } else {
+                        if (checkbox && checkbox.checked) { checkbox.checked = false; virtualModeViewer.hideComponent(componentName); }
+                        if (chip) { chip.dataset.checked = 'false'; chip.setAttribute('aria-pressed', 'false'); chip.classList.remove('bg-primary','text-white'); chip.classList.add('bg-gray-100','text-gray-500'); }
                     }
                 });
+                virtualModeViewer.updateStatus(show ? '✅ 已全选所有零件' : '✅ 已取消全选所有零件');
             }
 
-            if (deselectAllBtn) {
-                deselectAllBtn.addEventListener('click', () => {
-                    if (virtualModeViewer) {
-                        // Uncheck all checkboxes
-                        Object.keys(virtualModeViewer.components).forEach(componentName => {
-                            const checkbox = document.getElementById(`show-${componentName}`);
-                            if (checkbox && checkbox.checked) {
-                                checkbox.checked = false;
-                                virtualModeViewer.hideComponent(componentName);
-                            }
-                        });
-                        // Update status
-                        virtualModeViewer.updateStatus('✅ 已取消全选所有零件');
-                    }
-                });
-            }
+            ['select-all-parts', 'select-all-parts-desktop'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.addEventListener('click', () => selectAll(true));
+            });
+            ['deselect-all-parts', 'deselect-all-parts-desktop'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.addEventListener('click', () => selectAll(false));
+            });
         }
 
         // Set up rotation button event listeners
@@ -3464,6 +3592,21 @@
                     }
                 });
             }
+
+            // Mobile toolbar buttons
+            const mobileBtnMap = [
+                ['enable-drag-mobile',      () => virtualModeViewer && virtualModeViewer.enableDragMode()],
+                ['free-rotation-mobile',    () => virtualModeViewer && virtualModeViewer.enableFreeRotation()],
+                ['disable-ops-mobile',      () => virtualModeViewer && (virtualModeViewer.disableAllModes(), virtualModeViewer.updateStatus('✅ 所有操作模式已关闭'))],
+                ['rotate-x-mobile',         () => virtualModeViewer && virtualModeViewer.toggleAxisRotation('x')],
+                ['rotate-y-mobile',         () => virtualModeViewer && virtualModeViewer.toggleAxisRotation('y')],
+                ['expand-models-mobile',    () => virtualModeViewer && virtualModeViewer.expandModels()],
+                ['reset-positions-mobile',  () => virtualModeViewer && virtualModeViewer.resetPositions()],
+            ];
+            mobileBtnMap.forEach(([id, handler]) => {
+                const btn = document.getElementById(id);
+                if (btn) btn.addEventListener('click', handler);
+            });
         }
 
         // Set up mouse event listeners for dragging
@@ -3473,39 +3616,43 @@
                 return;
             }
 
-            // Add mousedown event listener
+            // Mouse events
             canvas.addEventListener('mousedown', (event) => {
-                if (virtualModeViewer) {
-                    virtualModeViewer.onMouseDown(event);
-                }
+                if (virtualModeViewer) virtualModeViewer.onMouseDown(event);
             });
-
-            // Add mousemove event listener
             canvas.addEventListener('mousemove', (event) => {
-                if (virtualModeViewer) {
-                    virtualModeViewer.onMouseMove(event);
-                }
+                if (virtualModeViewer) virtualModeViewer.onMouseMove(event);
             });
-
-            // Add mouseup event listener
             canvas.addEventListener('mouseup', (event) => {
-                if (virtualModeViewer) {
-                    virtualModeViewer.onMouseUp(event);
-                }
+                if (virtualModeViewer) virtualModeViewer.onMouseUp(event);
             });
-
-            // Also handle mouseup on document to catch releases outside canvas
             document.addEventListener('mouseup', (event) => {
-                if (virtualModeViewer) {
-                    virtualModeViewer.onMouseUp(event);
-                }
+                if (virtualModeViewer) virtualModeViewer.onMouseUp(event);
             });
 
-            // Add window resize event listener
+            // Touch events - convert to synthetic mouse-like events
+            canvas.addEventListener('touchstart', (event) => {
+                if (!virtualModeViewer) return;
+                event.preventDefault();
+                const touch = event.touches[0];
+                virtualModeViewer.onMouseDown({ clientX: touch.clientX, clientY: touch.clientY });
+            }, { passive: false });
+
+            canvas.addEventListener('touchmove', (event) => {
+                if (!virtualModeViewer) return;
+                event.preventDefault();
+                const touch = event.touches[0];
+                virtualModeViewer.onMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
+            }, { passive: false });
+
+            canvas.addEventListener('touchend', (event) => {
+                if (!virtualModeViewer) return;
+                virtualModeViewer.onMouseUp({});
+            });
+
+            // Window resize
             window.addEventListener('resize', () => {
-                if (virtualModeViewer) {
-                    virtualModeViewer.onWindowResize();
-                }
+                if (virtualModeViewer) virtualModeViewer.onWindowResize();
             });
         }
 
