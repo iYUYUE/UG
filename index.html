@@ -413,6 +413,15 @@
                             </div>
                         </div>
 
+                        <!-- 加载进度条 -->
+                        <div id="virtual-loading-overlay" style="position:absolute;inset:0;background:rgba(255,255,255,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9998;">
+                            <p id="virtual-loading-label" class="text-sm font-medium text-gray-600 mb-3">正在加载模型...</p>
+                            <div class="w-56 bg-gray-200 rounded-full h-2 mb-2">
+                                <div id="virtual-loading-bar" class="bg-primary h-2 rounded-full transition-all duration-200" style="width:0%"></div>
+                            </div>
+                            <p id="virtual-loading-count" class="text-xs text-gray-400">0 / 0</p>
+                        </div>
+
                         <!-- 状态指示器 (底部居中) -->
                         <div id="virtual-status-indicator" class="text-xs rounded px-3 py-1.5 text-center" style="position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); background-color: #e8f3ff; color: #165DFF; white-space: nowrap; z-index: 9999;" role="status" aria-live="polite" aria-atomic="true">
                             初始化中...
@@ -2347,9 +2356,22 @@
                     this.scene.add(this.assemblyGroup);
                     
                     // Load all components
+                    const total = componentList.length;
+                    let loaded = 0;
+                    const overlay = document.getElementById('virtual-loading-overlay');
+                    const bar = document.getElementById('virtual-loading-bar');
+                    const countEl = document.getElementById('virtual-loading-count');
+                    const labelEl = document.getElementById('virtual-loading-label');
+                    if (overlay) overlay.style.display = 'flex';
+
                     for (const componentInfo of componentList) {
                         try {
+                            if (labelEl) labelEl.textContent = `正在加载：${this.modelLoader.getComponentDisplayName(this.moldType, componentInfo.name) || componentInfo.name}`;
                             const component = await this.modelLoader.loadGLB(componentInfo.file);
+                            loaded++;
+                            const pct = Math.round((loaded / total) * 100);
+                            if (bar) bar.style.width = pct + '%';
+                            if (countEl) countEl.textContent = `${loaded} / ${total}`;
                             
                             // Add component to assembly group
                             component.userData = { 
@@ -2378,9 +2400,15 @@
                             
                             console.log(`✅ Loaded: ${componentInfo.name} (${component.userData.displayName})`);
                         } catch (error) {
+                            loaded++;
+                            if (bar) bar.style.width = Math.round((loaded / total) * 100) + '%';
+                            if (countEl) countEl.textContent = `${loaded} / ${total}`;
                             console.warn(`⚠️ Failed to load: ${componentInfo.file}`, error);
                         }
                     }
+
+                    // 隐藏加载进度条
+                    if (overlay) overlay.style.display = 'none';
                     
                     // Calculate bounding box and scale the entire assembly
                     const assemblyBox = new THREE.Box3().setFromObject(this.assemblyGroup);
