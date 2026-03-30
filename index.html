@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>交互式图文题库系统</title>
+    <title>交互智学系统</title>
     <!-- Tailwind CSS v3 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
@@ -120,29 +120,59 @@
 
 <body class="bg-gray-50 min-h-screen">
     <!-- 导航栏 -->
-    <nav class="bg-white shadow-md">
+    <nav class="bg-white shadow-md sticky top-0 z-50">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <i class="fa fa-book text-primary text-2xl"></i>
-                <h1 class="text-xl font-bold text-gray-800">交互式图文题库</h1>
+            <!-- 左侧：首页时显示logo，子页面时显示返回按钮 -->
+            <div id="nav-left" class="flex items-center">
+                <!-- 首页 logo -->
+                <a id="nav-home-link" href="#" role="button" aria-label="返回首页" class="flex items-center space-x-2 rounded-lg px-2 py-1 hover:bg-neutral transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50">
+                    <i class="fa fa-book text-primary text-2xl"></i>
+                    <span class="text-xl font-bold text-gray-800">交互智学系统</span>
+                </a>
+                <!-- 子页面返回按钮（默认隐藏） -->
+                <a id="nav-back-btn" href="#" role="button" aria-label="返回" class="hidden items-center space-x-2 rounded-lg px-2 py-1 hover:bg-neutral transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50">
+                    <i class="fa fa-arrow-left text-primary text-lg"></i>
+                    <span class="text-sm font-medium text-gray-700">返回</span>
+                </a>
             </div>
-            <div class="flex items-center space-x-4">
-                <!-- <button id="btn-import" class="btn-secondary flex items-center space-x-1">
-                    <i class="fa fa-upload"></i>
-                    <span>导入题目</span>
-                </button> -->
-                <!-- <button id="btn-edit" class="btn-secondary flex items-center space-x-1">
-                    <i class="fa fa-pencil"></i>
-                    <span>编辑题目</span>
-                </button> -->
-                <button id="btn-stats" class="btn-secondary flex items-center space-x-1">
-                    <i class="fa fa-bar-chart"></i>
-                    <span>分析统计</span>
-                </button>
-                <button id="btn-favorites" class="btn-secondary flex items-center space-x-1">
-                    <i class="fa fa-star"></i>
-                    <span>错题收藏</span>
-                </button>
+
+            <!-- 中间：子页面时显示模式名+进度 -->
+            <div id="nav-center" class="hidden flex-1 flex justify-center items-center space-x-2 mx-4">
+                <span id="nav-mode-badge" class="text-sm font-bold px-2 py-1 rounded"></span>
+                <span id="nav-mode-progress" class="text-sm text-gray-500"></span>
+            </div>
+
+            <!-- 右侧：操作按钮 -->
+            <div id="nav-right" class="flex items-center space-x-2 md:space-x-4">
+                <!-- 首页时显示 -->
+                <div id="nav-home-actions" class="flex items-center space-x-2 md:space-x-4">
+                    <button id="btn-stats" class="flex flex-col md:flex-row items-center md:space-x-1 text-primary hover:text-accent transition-colors px-2 py-1 rounded-lg hover:bg-neutral focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50">
+                        <i class="fa fa-bar-chart text-lg md:text-base"></i>
+                        <span class="text-xs md:text-sm font-medium">分析统计</span>
+                    </button>
+                    <button id="btn-favorites" class="flex flex-col md:flex-row items-center md:space-x-1 text-primary hover:text-accent transition-colors px-2 py-1 rounded-lg hover:bg-neutral focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50">
+                        <i class="fa fa-star text-lg md:text-base"></i>
+                        <span class="text-xs md:text-sm font-medium">错题收藏</span>
+                    </button>
+                </div>
+                <!-- 学习模式时显示 -->
+                <div id="nav-learn-actions" class="hidden items-center space-x-2">
+                    <button id="btn-prev-question-nav" class="btn-secondary flex items-center space-x-1 py-1.5 px-3 text-sm" disabled>
+                        <i class="fa fa-chevron-left"></i>
+                        <span class="hidden sm:inline">上一题</span>
+                    </button>
+                    <button id="btn-next-question-nav" class="btn-primary flex items-center space-x-1 py-1.5 px-3 text-sm">
+                        <span class="hidden sm:inline">下一题</span>
+                        <i class="fa fa-chevron-right"></i>
+                    </button>
+                </div>
+                <!-- 测验模式时显示 -->
+                <div id="nav-test-actions" class="hidden">
+                    <button id="btn-submit-test-nav" class="btn-primary flex items-center space-x-1 py-1.5 px-3 text-sm" disabled>
+                        <span>提交答案</span>
+                        <i class="fa fa-check"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
@@ -150,127 +180,82 @@
     <!-- 主内容区 -->
     <main class="container mx-auto px-4 py-8">
         <!-- 欢迎页面 -->
-        <section id="welcome-section" class="flex flex-col items-center justify-center py-12 animate-fade-in">
-            <div class="text-center mb-12 max-w-4xl">
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">注塑模具设计情境教程（第三版）</h1>
-                <h2 class="text-2xl font-semibold text-gray-700 mb-3">UG NX 2512</h2>
-                <p class="text-base text-gray-600 mb-2">探索、互动、实践</p>
-                <p class="text-sm text-gray-600 mb-2">学习与掌握先进的注塑模具设计核心技能</p>
-                <p class="text-sm text-gray-500 mb-1">交互学习、即时测验、3D虚拟</p>
-                <p class="text-sm text-gray-500">开启属于你的智能学习之旅</p>
+        <section id="welcome-section" class="flex flex-col items-center justify-center py-8 animate-fade-in">
+            <div class="text-center mb-10 max-w-2xl px-2">
+                <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-1">注塑模具设计情境教程</h1>
+                <p class="text-base text-gray-600 mb-1">（第三版）</p>
+                <h2 class="text-xl md:text-2xl font-semibold text-primary mb-3">UG NX 2512</h2>
+                <p class="text-sm text-gray-600 mb-2">探索 · 互动 · 实践</p>
+                <p class="text-sm text-gray-600 mb-3">学习与掌握先进的注塑模具设计核心技能</p>
+                <p class="text-sm text-gray-500 leading-relaxed">依托情境化实践项目，深入掌握 UG 软件（广泛应用于汽车、航空航天、模具及机械制造等领域的全球高端解决方案），通过实战训练，系统学习注塑模具的三维设计，积累核心工程经验。</p>
+                <p class="text-sm text-gray-500 mt-2">交互学习 | 测评反馈 | 虚拟三维 ——开启属于你的智能学习之旅</p>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl">
-                <div class="bg-white rounded-xl shadow-lg p-8 card-shadow flex flex-col">
-                    <div class="flex-grow">
-                        <div class="flex items-center justify-center mb-6">
-                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                                <i class="fa fa-graduation-cap text-primary text-3xl"></i>
-                            </div>
-                        </div>
-                        <h3 class="text-2xl font-bold text-center text-gray-800 mb-4">学习模式</h3>
-                        <p class="text-gray-600 text-center mb-6">
-                            按序号顺序浏览题目，选择答案后立即显示正确答案和详细解析，帮助您深入理解知识点。
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
+                <!-- 交互学习卡片 -->
+                <div class="bg-white rounded-xl shadow-lg card-shadow flex flex-col">
+                    <div class="flex justify-center bg-blue-50 py-5 rounded-t-xl overflow-hidden">
+                        <img src="./images/9_72.jpg" alt="交互学习预览" class="h-36 w-auto object-contain rounded-lg shadow-sm" onerror="this.parentElement.innerHTML='<div class=\'w-full h-36 flex items-center justify-center\'><i class=\'fa fa-graduation-cap text-primary text-5xl\'></i></div>'">
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow">
+                        <h3 class="text-xl font-bold text-center text-gray-800 mb-3">交互学习</h3>
+                        <p class="text-gray-600 text-center text-sm mb-5 flex-grow">
+                            按序号测览题目，选择答案后立即显示正确答案和详细解析，帮助您深入理解知识点。
                         </p>
+                        <div class="mb-4">
+                            <label for="learn-unit-select" class="block text-sm font-medium text-gray-700 mb-1">选择学习单元</label>
+                            <select id="learn-unit-select" class="block w-full pl-3 pr-10 py-2 text-sm border-gray-300 focus:outline-none focus:ring-primary focus:border-primary rounded-md border">
+                                <option value="all">所有单元</option>
+                            </select>
+                        </div>
+                        <button id="btn-learn-mode" class="btn-primary w-full" disabled>开始学习</button>
                     </div>
-
-                    <div class="mb-4 text-left w-full">
-                        <label for="learn-unit-select"
-                            class="block text-sm font-medium text-gray-700 mb-2">选择学习单元</label>
-                        <select id="learn-unit-select"
-                            class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md border">
-                            <option value="all">所有单元</option>
-                        </select>
-                    </div>
-                    <button id="btn-learn-mode" class="btn-primary w-full" disabled>
-                        开始学习
-                    </button>
                 </div>
-                <div class="bg-white rounded-xl shadow-lg p-8 card-shadow flex flex-col">
-                    <div class="flex-grow">
-                        <div class="flex items-center justify-center mb-6">
-                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                                <i class="fa fa-trophy text-primary text-3xl"></i>
-                            </div>
-                        </div>
-                        <h3 class="text-2xl font-bold text-center text-gray-800 mb-4">测验模式</h3>
-                        <p class="text-gray-600 text-center mb-6">
-                            题目随机排序，完成所有题目后计算得分，检验您的学习成果和知识掌握程度。
+
+                <!-- 测评反馈卡片 -->
+                <div class="bg-white rounded-xl shadow-lg card-shadow flex flex-col">
+                    <div class="flex justify-center bg-blue-50 py-5 rounded-t-xl overflow-hidden">
+                        <img src="./images/9_97.jpg" alt="测评反馈预览" class="h-36 w-auto object-contain rounded-lg shadow-sm" onerror="this.parentElement.innerHTML='<div class=\'w-full h-36 flex items-center justify-center\'><i class=\'fa fa-trophy text-primary text-5xl\'></i></div>'">
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow">
+                        <h3 class="text-xl font-bold text-center text-gray-800 mb-3">测评反馈</h3>
+                        <p class="text-gray-600 text-center text-sm mb-5 flex-grow">
+                            选择单元或全部，答题提交答案后显示得分、答题详情和分析统计，帮助您检验与巩固知识点。
                         </p>
+                        <div class="mb-4">
+                            <label for="test-unit-select" class="block text-sm font-medium text-gray-700 mb-1">选择测验单元</label>
+                            <select id="test-unit-select" class="block w-full pl-3 pr-10 py-2 text-sm border-gray-300 focus:outline-none focus:ring-primary focus:border-primary rounded-md border">
+                                <option value="all">所有单元</option>
+                            </select>
+                        </div>
+                        <button id="btn-test-mode" class="btn-primary w-full" disabled>开始测验</button>
                     </div>
-                    <div class="mb-4 text-left w-full">
-                        <label for="test-unit-select"
-                            class="block text-sm font-medium text-gray-700 mb-2">选择测验单元</label>
-                        <select id="test-unit-select"
-                            class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md border">
-                            <option value="all">所有单元</option>
-                        </select>
-                    </div>
-                    <button id="btn-test-mode" class="btn-primary w-full" disabled>
-                        开始测验
-                    </button>
                 </div>
-                <!-- Virtual Mode Card -->
-                <div class="bg-white rounded-xl shadow-lg p-8 card-shadow flex flex-col">
-                    <div class="flex-grow">
-                        <div class="flex items-center justify-center mb-6">
-                            <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
-                                <i class="fa fa-cube text-purple-600 text-3xl"></i>
-                            </div>
-                        </div>
-                        <h3 class="text-2xl font-bold text-center text-gray-800 mb-2">虚拟模式</h3>
-                        <p class="text-gray-600 text-center mb-6">
-                            选择模具后，通过拖动和按钮，实现装、拆和360度观察零部件等功能，学习和掌握虚拟装配模具的结构、装配关系、零部件形状特征和名称。
+
+                <!-- 虚拟三维卡片 -->
+                <div class="bg-white rounded-xl shadow-lg card-shadow flex flex-col">
+                    <div class="flex justify-center bg-purple-50 py-5 rounded-t-xl overflow-hidden">
+                        <img src="./images/9_113.jpg" alt="虚拟三维预览" class="h-36 w-auto object-contain rounded-lg shadow-sm" onerror="this.parentElement.innerHTML='<div class=\'w-full h-36 flex items-center justify-center\'><i class=\'fa fa-cube text-purple-500 text-6xl\'></i></div>'">
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow">
+                        <h3 class="text-xl font-bold text-center text-gray-800 mb-3">虚拟三维</h3>
+                        <p class="text-gray-600 text-center text-sm mb-5 flex-grow">
+                            利用按钮或拖拽功能，对模具进行拆解、组装与旋转观察，在交互中掌握模具结构、装配关系，并熟悉各零部件的名称与形状特征。
                         </p>
+                        <div class="mb-4">
+                            <label for="mold-type-select" class="block text-sm font-medium text-gray-700 mb-1">选择模具</label>
+                            <select id="mold-type-select" class="block w-full pl-3 pr-10 py-2 text-sm border-gray-300 focus:outline-none focus:ring-primary focus:border-primary rounded-md border">
+                                <option value="b_type">按钮模具</option>
+                                <option value="m_type">名片盒模具</option>
+                            </select>
+                        </div>
+                        <button id="btn-start-virtual" class="btn-primary w-full" aria-label="进入虚拟模式开始3D模具模拟">开始模拟</button>
                     </div>
-
-                    <div class="mb-4 text-left w-full">
-                        <label for="mold-type-select"
-                            class="block text-sm font-medium text-gray-700 mb-2">选择模具</label>
-                        <select id="mold-type-select"
-                            class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md border">
-                            <option value="b_type">按钮模具</option>
-                            <option value="m_type">名片盒模具</option>
-                        </select>
-                    </div>
-
-                    <button id="btn-start-virtual" class="btn-primary w-full" aria-label="进入虚拟模式开始3D模具模拟">
-                        开始模拟
-                    </button>
                 </div>
             </div>
         </section>
 
         <!-- 学习模式页面 -->
         <section id="learn-mode-section" class="hidden animate-fade-in">
-            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-                <div class="flex justify-between items-center mb-4">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-sm font-medium text-gray-500">模式:</span>
-                        <span class="text-sm font-bold text-primary bg-blue-50 px-2 py-1 rounded">学习模式</span>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-sm font-medium text-gray-500">题目:</span>
-                        <span id="learn-question-number" class="text-sm font-bold">1/20</span>
-                    </div>
-                </div>
-                <div class="flex justify-between items-center">
-                    <button id="btn-back-to-welcome-from-learn" class="btn-secondary flex items-center space-x-1">
-                        <i class="fa fa-arrow-left"></i>
-                        <span>返回</span>
-                    </button>
-                    <div class="flex items-center space-x-2">
-                        <button id="btn-prev-question" class="btn-secondary flex items-center space-x-1" disabled>
-                            <i class="fa fa-chevron-left"></i>
-                            <span>上一题</span>
-                        </button>
-                        <button id="btn-next-question" class="btn-primary flex items-center space-x-1">
-                            <span>下一题</span>
-                            <i class="fa fa-chevron-right"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
             <div class="bg-white rounded-xl shadow-lg p-6">
                 <div id="learn-question-container">
                     <h3 id="learn-question-title" class="text-xl font-bold text-gray-800 mb-4">题目加载中...</h3>
@@ -306,29 +291,6 @@
 
         <!-- 测验模式页面 -->
         <section id="test-mode-section" class="hidden animate-fade-in">
-            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-                <div class="flex justify-between items-center mb-4">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-sm font-medium text-gray-500">模式:</span>
-                        <span class="text-sm font-bold text-warning bg-yellow-50 px-2 py-1 rounded">测验模式</span>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-sm font-medium text-gray-500">进度:</span>
-                        <span id="test-progress" class="text-sm font-bold">0/20</span>
-                    </div>
-                </div>
-                <div class="flex justify-between items-center">
-                    <button id="btn-back-to-welcome-from-test" class="btn-secondary flex items-center space-x-1">
-                        <i class="fa fa-arrow-left"></i>
-                        <span>返回</span>
-                    </button>
-                    <button id="btn-submit-test" class="btn-primary flex items-center space-x-1" disabled>
-                        <span>提交答案</span>
-                        <i class="fa fa-check"></i>
-                    </button>
-                </div>
-            </div>
-
             <div class="bg-white rounded-xl shadow-lg p-6">
                 <div id="test-question-container">
                     <h3 id="test-question-title" class="text-xl font-bold text-gray-800 mb-4">题目加载中...</h3>
@@ -349,20 +311,6 @@
 
         <!-- 虚拟模式页面 -->
         <section id="virtual-mode-section" class="hidden animate-fade-in">
-            <!-- 导航栏 -->
-            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-                <div class="flex justify-between items-center">
-                    <button id="btn-return-from-virtual" class="btn-secondary flex items-center space-x-1" aria-label="返回欢迎页面">
-                        <i class="fa fa-arrow-left" aria-hidden="true"></i>
-                        <span>返回</span>
-                    </button>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-sm font-medium text-gray-500">模式:</span>
-                        <span class="text-sm font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded">虚拟模式</span>
-                    </div>
-                </div>
-            </div>
-
             <!-- 手机端：零部件列表横向 chip 条 -->
             <div class="md:hidden bg-white rounded-xl shadow-lg px-3 py-2 mb-3">
                 <div class="flex items-center gap-2">
@@ -510,15 +458,6 @@
 
         <!-- 测验结果页面 -->
         <section id="test-result-section" class="hidden animate-fade-in">
-            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-xl font-bold text-gray-800">测验结果</h3>
-                    <button id="btn-back-to-welcome-from-result" class="btn-secondary flex items-center space-x-1">
-                        <i class="fa fa-arrow-left"></i>
-                        <span>返回首页</span>
-                    </button>
-                </div>
-            </div>
 
             <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
                 <div class="flex flex-col items-center justify-center py-8">
@@ -556,15 +495,6 @@
 
         <!-- 分析统计页面 -->
         <section id="stats-section" class="hidden animate-fade-in">
-            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-xl font-bold text-gray-800">分析统计</h3>
-                    <button id="btn-back-to-welcome-from-stats" class="btn-secondary flex items-center space-x-1">
-                        <i class="fa fa-arrow-left"></i>
-                        <span>返回首页</span>
-                    </button>
-                </div>
-            </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div class="bg-white rounded-xl shadow-lg p-6">
@@ -607,15 +537,6 @@
 
         <!-- 错题收藏页面 -->
         <section id="favorites-section" class="hidden animate-fade-in">
-            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-xl font-bold text-gray-800">错题收藏</h3>
-                    <button id="btn-back-to-welcome-from-favorites" class="btn-secondary flex items-center space-x-1">
-                        <i class="fa fa-arrow-left"></i>
-                        <span>返回首页</span>
-                    </button>
-                </div>
-            </div>
 
             <div id="favorites-empty"
                 class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center justify-center py-12">
@@ -640,7 +561,7 @@
         <div class="container mx-auto px-4 py-6">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div class="mb-4 md:mb-0">
-                    <p class="text-gray-600">&copy; 2025 交互式图文题库系统. 保留所有权利.</p>
+                    <p class="text-gray-600">&copy; 2025 交互智学系统. 保留所有权利.</p>
                 </div>
                 <div class="flex space-x-4">
                     <a href="#" class="text-gray-500 hover:text-primary transition-colors duration-300">
@@ -681,6 +602,7 @@
         // 应用状态
         const appState = {
             currentMode: 'welcome',
+            previousMode: 'welcome',
             currentQuestionIndex: 0,
             learnQuestions: [],
             testQuestions: [],
@@ -713,24 +635,22 @@
             virtual: document.getElementById('virtual-mode-section')
         };
 
+        // 虚拟模式全局实例（提前声明避免TDZ）
+        let virtualModeViewer = null;
+        let virtualModeState = null;
+
         // 按钮事件监听
+        document.getElementById('nav-home-link').addEventListener('click', (e) => { e.preventDefault(); showWelcomeSection(); });
+        document.getElementById('nav-back-btn').addEventListener('click', (e) => { e.preventDefault(); goBack(); });
         document.getElementById('btn-learn-mode').addEventListener('click', startLearnMode);
         document.getElementById('btn-test-mode').addEventListener('click', startTestMode);
         document.getElementById('btn-start-virtual').addEventListener('click', () => showSection('virtual'));
-        document.getElementById('btn-back-to-welcome-from-learn').addEventListener('click', showWelcomeSection);
-        document.getElementById('btn-back-to-welcome-from-test').addEventListener('click', showWelcomeSection);
-        document.getElementById('btn-back-to-welcome-from-result').addEventListener('click', showWelcomeSection);
-        document.getElementById('btn-back-to-welcome-from-stats').addEventListener('click', showWelcomeSection);
-        document.getElementById('btn-back-to-welcome-from-favorites').addEventListener('click', showWelcomeSection);
-        document.getElementById('btn-return-from-virtual').addEventListener('click', showWelcomeSection);
-        document.getElementById('btn-prev-question').addEventListener('click', showPreviousQuestion);
-        document.getElementById('btn-next-question').addEventListener('click', showNextQuestion);
-        document.getElementById('btn-submit-test').addEventListener('click', submitTest);
+        document.getElementById('btn-prev-question-nav').addEventListener('click', showPreviousQuestion);
+        document.getElementById('btn-next-question-nav').addEventListener('click', showNextQuestion);
+        document.getElementById('btn-submit-test-nav').addEventListener('click', submitTest);
         document.getElementById('btn-review-test').addEventListener('click', reviewTest);
         document.getElementById('btn-stats').addEventListener('click', showStatsSection);
         document.getElementById('btn-favorites').addEventListener('click', showFavoritesSection);
-        // document.getElementById('btn-import').addEventListener('click', showImportModal);
-        // document.getElementById('btn-edit').addEventListener('click', showEditModal);
         document.getElementById('btn-start-learning-from-favorites').addEventListener('click', startLearnMode);
         document.getElementById('btn-close-modal').addEventListener('click', closeModal);
         document.getElementById('btn-modal-confirm').addEventListener('click', confirmModal);
@@ -803,23 +723,92 @@
             localStorage.setItem('quizAppState', JSON.stringify(stateToSave));
         }
 
+        // 导航栏状态切换
+        function updateNavBar(mode) {
+            const navHomeLink = document.getElementById('nav-home-link');
+            const navBackBtn = document.getElementById('nav-back-btn');
+            const navCenter = document.getElementById('nav-center');
+            const navHomeActions = document.getElementById('nav-home-actions');
+            const navLearnActions = document.getElementById('nav-learn-actions');
+            const navTestActions = document.getElementById('nav-test-actions');
+            const navModeBadge = document.getElementById('nav-mode-badge');
+            const navProgress = document.getElementById('nav-mode-progress');
+
+            // 重置所有状态
+            navCenter.classList.add('hidden');
+            navLearnActions.classList.add('hidden');
+            navLearnActions.classList.remove('flex');
+            navTestActions.classList.add('hidden');
+            navProgress.textContent = '';
+
+            // stats/favorites/result 用导航栏返回，不需要特殊处理右侧按钮
+            const keepHomeNav = ['welcome'];
+            if (keepHomeNav.includes(mode)) {
+                navHomeLink.classList.remove('hidden');
+                navHomeLink.classList.add('flex');
+                navBackBtn.classList.add('hidden');
+                navBackBtn.classList.remove('flex');
+                navHomeActions.classList.remove('hidden');
+            } else {
+                navHomeLink.classList.add('hidden');
+                navHomeLink.classList.remove('flex');
+                navBackBtn.classList.remove('hidden');
+                navBackBtn.classList.add('flex');
+                const backLabel = navBackBtn.querySelector('span');
+                backLabel.textContent = '返回';
+                navHomeActions.classList.add('hidden');
+                navCenter.classList.remove('hidden');
+
+                if (mode === 'learn') {
+                    navModeBadge.textContent = '交互学习';
+                    navModeBadge.className = 'text-sm font-bold px-2 py-1 rounded text-primary bg-blue-50';
+                    navLearnActions.classList.remove('hidden');
+                    navLearnActions.classList.add('flex');
+                } else if (mode === 'test') {
+                    navModeBadge.textContent = '测评反馈';
+                    navModeBadge.className = 'text-sm font-bold px-2 py-1 rounded text-warning bg-yellow-50';
+                    navTestActions.classList.remove('hidden');
+                } else if (mode === 'virtual') {
+                    navModeBadge.textContent = '虚拟三维';
+                    navModeBadge.className = 'text-sm font-bold px-2 py-1 rounded text-purple-600 bg-purple-50';
+                } else if (mode === 'result') {
+                    navModeBadge.textContent = '测验结果';
+                    navModeBadge.className = 'text-sm font-bold px-2 py-1 rounded text-success bg-green-50';
+                } else if (mode === 'stats') {
+                    navModeBadge.textContent = '分析统计';
+                    navModeBadge.className = 'text-sm font-bold px-2 py-1 rounded text-primary bg-blue-50';
+                } else if (mode === 'favorites') {
+                    navModeBadge.textContent = '错题收藏';
+                    navModeBadge.className = 'text-sm font-bold px-2 py-1 rounded text-warning bg-yellow-50';
+                }
+            }
+        }
+
         // 显示指定页面
         function showSection(sectionName) {
             for (const key in sections) {
                 sections[key].classList.add('hidden');
             }
             sections[sectionName].classList.remove('hidden');
+            appState.previousMode = appState.currentMode;
             appState.currentMode = sectionName;
-            
-            // Initialize Virtual Mode when showing virtual section
+            updateNavBar(sectionName);
+
             if (sectionName === 'virtual') {
                 initializeVirtualMode();
             }
         }
 
-        // 显示欢迎页面
         function showWelcomeSection() {
             showSection('welcome');
+        }
+
+        function goBack() {
+            if (appState.previousMode === 'favorites') {
+                showFavoritesSection();
+            } else {
+                showSection('welcome');
+            }
         }
 
         // 开始学习模式
@@ -868,7 +857,7 @@
         // 加载学习模式的题目
         function loadQuestionForLearnMode(index) {
             const question = appState.learnQuestions[index];
-            document.getElementById('learn-question-number').textContent = `${index + 1}/${appState.learnQuestions.length}`;
+            document.getElementById('nav-mode-progress').textContent = `${index + 1} / ${appState.learnQuestions.length}`;
             document.getElementById('learn-question-title').textContent = question.title;
             document.getElementById('learn-question-image').innerHTML = `<img src="${question.image}" alt="${question.title}" class="max-h-64 rounded-lg">`;
             document.getElementById('learn-question-text').innerHTML = `<p>${question.text}</p>`;
@@ -901,7 +890,8 @@
         // 加载测验模式的题目
         function loadQuestionForTestMode(index) {
             const question = appState.testQuestions[index];
-            document.getElementById('test-progress').textContent = `${index + 1}/${appState.testQuestions.length}`;
+            const progress = document.getElementById('nav-mode-progress');
+            if (progress) progress.textContent = `${index + 1} / ${appState.testQuestions.length}`;
             document.getElementById('test-question-title').textContent = question.title;
             document.getElementById('test-question-image').innerHTML = `<img src="${question.image}" alt="${question.title}" class="max-h-64 rounded-lg">`;
             document.getElementById('test-question-text').innerHTML = `<p>${question.text}</p>`;
@@ -956,16 +946,19 @@
             document.getElementById('learn-explanation-container').classList.remove('hidden');
 
             const explanationContainer = document.getElementById('learn-explanation-container');
-            if (!explanationContainer.querySelector('.btn-favorite')) {
-                const favoriteButton = document.createElement('button');
-                favoriteButton.className = `btn-secondary btn-favorite mt-4 ${appState.favoriteQuestions.has(appState.currentQuestionIndex) ? 'bg-yellow-100 text-yellow-600 border-yellow-300' : ''}`;
-                favoriteButton.innerHTML = `
-                    <i class="fa ${appState.favoriteQuestions.has(appState.currentQuestionIndex) ? 'fa-star' : 'fa-star-o'}"></i>
-                    <span>${appState.favoriteQuestions.has(appState.currentQuestionIndex) ? '取消收藏' : '收藏题目'}</span>
-                `;
-                favoriteButton.addEventListener('click', toggleFavoriteQuestion);
-                explanationContainer.appendChild(favoriteButton);
-            }
+            // 每次都移除旧按钮重新创建，确保状态与当前题目一致
+            const existingBtn = explanationContainer.querySelector('.btn-favorite');
+            if (existingBtn) existingBtn.remove();
+
+            const isFav = appState.favoriteQuestions.has(appState.currentQuestionIndex);
+            const favoriteButton = document.createElement('button');
+            favoriteButton.className = `btn-secondary btn-favorite mt-4 ${isFav ? 'bg-yellow-100 text-yellow-600 border-yellow-300' : ''}`;
+            favoriteButton.innerHTML = `
+                <i class="fa ${isFav ? 'fa-star' : 'fa-star-o'}"></i>
+                <span>${isFav ? '取消收藏' : '收藏题目'}</span>
+            `;
+            favoriteButton.addEventListener('click', toggleFavoriteQuestion);
+            explanationContainer.appendChild(favoriteButton);
         }
 
         // 测验模式选择选项
@@ -999,8 +992,8 @@
 
         // 更新学习模式导航
         function updateLearnModeNavigation() {
-            const prevButton = document.getElementById('btn-prev-question');
-            const nextButton = document.getElementById('btn-next-question');
+            const prevButton = document.getElementById('btn-prev-question-nav');
+            const nextButton = document.getElementById('btn-next-question-nav');
 
             prevButton.disabled = appState.currentQuestionIndex === 0;
             nextButton.disabled = appState.currentQuestionIndex === appState.learnQuestions.length - 1;
@@ -1016,14 +1009,20 @@
             } else {
                 nextButton.classList.remove('opacity-50', 'cursor-not-allowed');
             }
+
+            // 更新导航栏进度
+            const progress = document.getElementById('nav-mode-progress');
+            if (progress) progress.textContent = `${appState.currentQuestionIndex + 1} / ${appState.learnQuestions.length}`;
         }
 
         // 更新测验模式UI
         function updateTestModeUI() {
-            const submitButton = document.getElementById('btn-submit-test');
+            const submitButton = document.getElementById('btn-submit-test-nav');
             const answeredCount = appState.testAnswers.filter(answer => answer !== null).length;
 
-            document.getElementById('test-progress').textContent = `${answeredCount}/${appState.testQuestions.length}`;
+            // 更新导航栏进度
+            const progress = document.getElementById('nav-mode-progress');
+            if (progress) progress.textContent = `${answeredCount} / ${appState.testQuestions.length}`;
 
             if (answeredCount === appState.testQuestions.length) {
                 submitButton.disabled = false;
@@ -1299,6 +1298,7 @@
 
         // 复习收藏题目
         function reviewFavoriteQuestion(index) {
+            appState.learnQuestions = questionBank;
             appState.currentQuestionIndex = index;
             showSection('learn');
             loadQuestionForLearnMode(index);
@@ -3202,9 +3202,7 @@
             }
         }
 
-        // Global viewer instance and state manager
-        let virtualModeViewer = null;
-        let virtualModeState = null;
+        // Global viewer instance and state manager (declared at top of script)
 
         // Initialize Virtual Mode
         function initializeVirtualMode() {
