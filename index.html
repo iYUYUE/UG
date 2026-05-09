@@ -215,7 +215,7 @@
                 <p class="text-sm text-gray-500 leading-relaxed">依托情境化实践项目，深入掌握 UG 软件（广泛应用于汽车、航空航天、模具及机械制造等领域的全球高端解决方案），通过实战训练，系统学习注塑模具的三维设计，积累核心工程经验。</p>
                 <p class="text-sm text-gray-500 mt-2">交互学习 | 测评反馈 | 虚拟三维 ——开启属于你的智能学习之旅</p>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-7xl">
                 <!-- 交互学习卡片 -->
                 <div class="bg-white rounded-xl shadow-lg card-shadow flex flex-col">
                     <div class="flex justify-center bg-blue-50 py-5 rounded-t-xl overflow-hidden">
@@ -274,6 +274,28 @@
                             </select>
                         </div>
                         <button id="btn-start-virtual" class="btn-primary w-full" aria-label="进入虚拟模式开始3D模具模拟">开始模拟</button>
+                    </div>
+                </div>
+
+                <!-- 企业流程表单与动态更新资料卡片 -->
+                <div class="bg-white rounded-xl shadow-lg card-shadow flex flex-col">
+                    <div class="flex justify-center bg-green-50 py-5 rounded-t-xl overflow-hidden">
+                        <img src="./images/8_40.jpg" alt="企业资料预览" class="h-36 w-auto object-contain rounded-lg shadow-sm" onerror="this.parentElement.innerHTML='<div class=\'w-full h-36 flex items-center justify-center\'><i class=\'fa fa-file-text text-green-500 text-5xl\'></i></div>'">
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow">
+                        <h3 class="text-xl font-bold text-center text-gray-800 mb-3">企业流程表单与动态更新资料</h3>
+                        <p class="text-gray-600 text-center text-sm mb-5 flex-grow">
+                            推送模具设计全流程中的真实企业表单、企业新案例、UG 软件新版本功能介绍、模具新技术应用资料等。
+                        </p>
+                        <div class="mb-4">
+                            <label for="resource-category-select" class="block text-sm font-medium text-gray-700 mb-1">选择内容</label>
+                            <select id="resource-category-select" class="block w-full pl-3 pr-10 py-2 text-sm border-gray-300 focus:outline-none focus:ring-primary focus:border-primary rounded-md border">
+                                <option value="task">模具设计任务书</option>
+                                <option value="change">设计变更通知单</option>
+                                <option value="review">模具设计3D评审表</option>
+                            </select>
+                        </div>
+                        <button id="btn-enterprise-resources" class="btn-primary w-full">查看资料</button>
                     </div>
                 </div>
             </div>
@@ -689,6 +711,17 @@
         document.getElementById('btn-learn-mode').addEventListener('click', startLearnMode);
         document.getElementById('btn-test-mode').addEventListener('click', startTestMode);
         document.getElementById('btn-start-virtual').addEventListener('click', () => showSection('virtual'));
+        document.getElementById('btn-enterprise-resources').addEventListener('click', () => {
+            const selectedResource = document.getElementById('resource-category-select').value;
+            const resourceMap = {
+                'task': './forms/模具设计任务书.pdf',
+                'change': './forms/设计变更通知单.pdf',
+                'review': './forms/模具设计3D评审表.pdf'
+            };
+            if (resourceMap[selectedResource]) {
+                window.open(resourceMap[selectedResource], '_blank');
+            }
+        });
         document.getElementById('btn-prev-question-nav').addEventListener('click', showPreviousQuestion);
         document.getElementById('btn-next-question-nav').addEventListener('click', showNextQuestion);
         document.getElementById('btn-submit-test-nav').addEventListener('click', submitTest);
