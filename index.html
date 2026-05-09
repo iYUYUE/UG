@@ -114,6 +114,31 @@
                 outline-offset: 2px;
                 box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
             }
+            /* 零部件列表滚动增强 */
+            .parts-scroll-container {
+                -webkit-overflow-scrolling: touch;
+            }
+            .parts-scroll-container::-webkit-scrollbar {
+                height: 4px;
+            }
+            .parts-scroll-container::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .parts-scroll-container::-webkit-scrollbar-thumb {
+                background: rgba(59, 130, 246, 0.3);
+                border-radius: 2px;
+            }
+            .parts-scroll-container::-webkit-scrollbar-thumb:hover {
+                background: rgba(59, 130, 246, 0.5);
+            }
+            /* 初始加载时短暂显示滚动条 */
+            @keyframes showScrollbar {
+                0%, 100% { scrollbar-color: rgba(59, 130, 246, 0.3) transparent; }
+                50% { scrollbar-color: rgba(59, 130, 246, 0.6) transparent; }
+            }
+            .parts-scroll-hint {
+                animation: showScrollbar 2s ease-in-out;
+            }
         }
     </style>
 </head>
@@ -313,15 +338,28 @@
         <section id="virtual-mode-section" class="hidden animate-fade-in">
             <!-- 手机端：零部件列表横向 chip 条 -->
             <div class="md:hidden bg-white rounded-xl shadow-lg px-3 py-2 mb-3">
-                <div class="flex items-center gap-2">
-                    <span class="text-xs text-gray-500 flex-shrink-0">零部件</span>
-                    <div id="parts-list-container-mobile" class="flex gap-2 overflow-x-auto pb-1" style="scrollbar-width:none;">
+                <!-- 第一行：标题和操作按钮 -->
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-medium text-gray-600">零部件列表</span>
+                    <div class="flex gap-1.5">
+                        <button id="select-all-parts" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-600 py-1 px-2.5 rounded-md transition-colors" aria-label="选择所有零件">
+                            <i class="fa fa-check-square-o mr-0.5"></i>全选
+                        </button>
+                        <button id="deselect-all-parts" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 py-1 px-2.5 rounded-md transition-colors" aria-label="取消选择所有零件">
+                            <i class="fa fa-square-o mr-0.5"></i>清空
+                        </button>
+                    </div>
+                </div>
+                <!-- 第二行：滚动的零部件chips -->
+                <div class="relative">
+                    <!-- 左侧渐变遮罩 -->
+                    <div id="parts-scroll-gradient-left" class="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white to-transparent pointer-events-none z-10 opacity-0 transition-opacity duration-300"></div>
+                    <!-- 滚动容器 -->
+                    <div id="parts-list-container-mobile" class="flex gap-2 overflow-x-auto pb-1 parts-scroll-container" style="scrollbar-width: thin; scrollbar-color: rgba(59, 130, 246, 0.3) transparent; scroll-behavior: smooth;">
                         <!-- chips populated by JS -->
                     </div>
-                    <div class="flex gap-1 flex-shrink-0 ml-auto">
-                        <button id="select-all-parts" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 py-1 px-2 rounded whitespace-nowrap" aria-label="选择所有零件">全选</button>
-                        <button id="deselect-all-parts" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 py-1 px-2 rounded whitespace-nowrap" aria-label="取消选择所有零件">取消</button>
-                    </div>
+                    <!-- 右侧渐变遮罩 -->
+                    <div id="parts-scroll-gradient-right" class="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white to-transparent pointer-events-none z-10 transition-opacity duration-300"></div>
                 </div>
             </div>
 
@@ -385,15 +423,12 @@
 
                 <!-- 预览区域 (右侧弹性区域) -->
                 <div class="flex-1 relative">
-                    <div class="bg-white rounded-xl shadow-lg overflow-hidden relative" style="height: calc(100vh - 200px); min-height: 300px;">
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden relative" style="height: calc(100vh - 280px); min-height: 300px;">
                         <!-- 3D Canvas -->
                         <canvas id="virtual-canvas" class="w-full h-full" role="img" aria-label="3D模具模型视图"></canvas>
                         
                         <!-- 坐标系指示器 (左下角) -->
                         <div class="axes-ui" id="coordinate-system" style="position: absolute; left: 16px; bottom: 16px; z-index: 9999; width: 90px; height: 90px;">
-                            <!-- 原点：居中偏右下，给Z轴留左下空间 -->
-                            <div class="axis-origin" style="position: absolute; top: 52px; left: 38px; width: 6px; height: 6px; background: #555; border-radius: 50%; z-index: 10;"></div>
-                            
                             <!-- X轴：水平向右 (红色) -->
                             <div class="axis-x" style="position: absolute; top: 54px; left: 38px; width: 40px; height: 2px; background: #e53935; transform-origin: left center;">
                                 <div style="position: absolute; right: -5px; top: -4px; width: 0; height: 0; border-left: 10px solid #e53935; border-top: 5px solid transparent; border-bottom: 5px solid transparent;"></div>
@@ -446,11 +481,11 @@
                         <span class="text-xs text-gray-600 leading-tight">关闭</span>
                     </button>
                     <button id="rotate-x-mobile" data-toggle="false" class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg bg-gray-100 active:bg-blue-100 transition-colors min-w-0 flex-1" aria-label="绕X轴旋转" aria-pressed="false">
-                        <i class="fa fa-arrows-h text-gray-600 text-base"></i>
+                        <i class="fa fa-arrow-right text-gray-600 text-base"></i>
                         <span class="text-xs text-gray-600 leading-tight">旋X</span>
                     </button>
                     <button id="rotate-y-mobile" data-toggle="false" class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg bg-gray-100 active:bg-blue-100 transition-colors min-w-0 flex-1" aria-label="绕Y轴旋转" aria-pressed="false">
-                        <i class="fa fa-arrows-v text-gray-600 text-base"></i>
+                        <i class="fa fa-arrow-up text-gray-600 text-base"></i>
                         <span class="text-xs text-gray-600 leading-tight">旋Y</span>
                     </button>
                     <button id="expand-models-mobile" class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg bg-gray-100 active:bg-blue-100 transition-colors min-w-0 flex-1" aria-label="展开所有模型">
@@ -803,6 +838,9 @@
             appState.currentMode = sectionName;
             updateNavBar(sectionName);
 
+            // 滚动到页面顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
             if (sectionName === 'virtual') {
                 initializeVirtualMode();
             }
@@ -868,7 +906,33 @@
             const question = appState.learnQuestions[index];
             document.getElementById('nav-mode-progress').textContent = `${index + 1} / ${appState.learnQuestions.length}`;
             document.getElementById('learn-question-title').textContent = question.title;
-            document.getElementById('learn-question-image').innerHTML = `<img src="${question.image}" alt="${question.title}" class="max-h-64 rounded-lg">`;
+            
+            // 显示图片加载指示器
+            const imageContainer = document.getElementById('learn-question-image');
+            imageContainer.innerHTML = `
+                <div class="w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <i class="fa fa-spinner fa-spin text-gray-400 text-3xl"></i>
+                </div>
+            `;
+            
+            // 创建图片元素并处理加载
+            const img = new Image();
+            img.onload = function() {
+                imageContainer.innerHTML = '';
+                img.className = 'max-h-64 rounded-lg shadow-sm';
+                imageContainer.appendChild(img);
+            };
+            img.onerror = function() {
+                imageContainer.innerHTML = `
+                    <div class="w-64 h-64 bg-gray-100 rounded-lg flex flex-col items-center justify-center text-gray-400">
+                        <i class="fa fa-image text-4xl mb-2"></i>
+                        <span class="text-sm">图片加载失败</span>
+                    </div>
+                `;
+            };
+            img.src = question.image;
+            img.alt = question.title;
+            
             document.getElementById('learn-question-text').innerHTML = `<p>${question.text}</p>`;
 
             const optionsContainer = document.getElementById('learn-options-container');
@@ -902,7 +966,33 @@
             const progress = document.getElementById('nav-mode-progress');
             if (progress) progress.textContent = `${index + 1} / ${appState.testQuestions.length}`;
             document.getElementById('test-question-title').textContent = question.title;
-            document.getElementById('test-question-image').innerHTML = `<img src="${question.image}" alt="${question.title}" class="max-h-64 rounded-lg">`;
+            
+            // 显示图片加载指示器
+            const imageContainer = document.getElementById('test-question-image');
+            imageContainer.innerHTML = `
+                <div class="w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <i class="fa fa-spinner fa-spin text-gray-400 text-3xl"></i>
+                </div>
+            `;
+            
+            // 创建图片元素并处理加载
+            const img = new Image();
+            img.onload = function() {
+                imageContainer.innerHTML = '';
+                img.className = 'max-h-64 rounded-lg shadow-sm';
+                imageContainer.appendChild(img);
+            };
+            img.onerror = function() {
+                imageContainer.innerHTML = `
+                    <div class="w-64 h-64 bg-gray-100 rounded-lg flex flex-col items-center justify-center text-gray-400">
+                        <i class="fa fa-image text-4xl mb-2"></i>
+                        <span class="text-sm">图片加载失败</span>
+                    </div>
+                `;
+            };
+            img.src = question.image;
+            img.alt = question.title;
+            
             document.getElementById('test-question-text').innerHTML = `<p>${question.text}</p>`;
 
             const optionsContainer = document.getElementById('test-options-container');
@@ -2537,6 +2627,58 @@
                         mobileContainer.appendChild(chip);
                     }
                 });
+
+                // 增强手机端滚动体验
+                if (mobileContainer) {
+                    this.setupMobileScrollEnhancement(mobileContainer);
+                }
+            }
+
+            // 设置手机端滚动增强效果
+            setupMobileScrollEnhancement(container) {
+                const leftGradient = document.getElementById('parts-scroll-gradient-left');
+                const rightGradient = document.getElementById('parts-scroll-gradient-right');
+                
+                if (!leftGradient || !rightGradient) return;
+
+                // 更新渐变遮罩显示状态
+                const updateGradients = () => {
+                    const { scrollLeft, scrollWidth, clientWidth } = container;
+                    const isAtStart = scrollLeft <= 5;
+                    const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 5;
+                    
+                    leftGradient.style.opacity = isAtStart ? '0' : '1';
+                    rightGradient.style.opacity = isAtEnd ? '0' : '1';
+                };
+
+                // 监听滚动事件
+                container.addEventListener('scroll', updateGradients);
+
+                // 初始化：延迟执行以确保DOM已渲染
+                setTimeout(() => {
+                    updateGradients();
+                    
+                    // 如果内容可滚动，添加视觉提示
+                    if (container.scrollWidth > container.clientWidth) {
+                        // 添加滚动提示动画
+                        container.classList.add('parts-scroll-hint');
+                        
+                        // 轻微滚动一下再回到起点，提示用户可以滑动
+                        setTimeout(() => {
+                            const scrollAmount = Math.min(60, container.scrollWidth - container.clientWidth);
+                            container.scrollTo({ left: scrollAmount, behavior: 'smooth' });
+                            
+                            setTimeout(() => {
+                                container.scrollTo({ left: 0, behavior: 'smooth' });
+                            }, 800);
+                        }, 500);
+                        
+                        // 2秒后移除动画类
+                        setTimeout(() => {
+                            container.classList.remove('parts-scroll-hint');
+                        }, 3000);
+                    }
+                }, 100);
             }
 
             // Show a component by name
